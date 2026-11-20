@@ -234,6 +234,9 @@
     font-size:13px;font-weight:900;color:#C2410C;background:linear-gradient(135deg,#FFF1E0,#FFE0C2);border:1.5px solid #FDC48C;
     box-shadow:0 2px 8px rgba(240,140,60,.18)}
   .streak[hidden]{display:none}
+  .streak{white-space:nowrap;flex:0 0 auto}
+  .star-card .card-head{flex-wrap:wrap;row-gap:6px}
+  .star-card .card-title{white-space:nowrap}
   .streak,#starHead{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
   .streak.holding,#starHead.holding{outline:2px solid #E2789F;outline-offset:3px;border-radius:999px}
   .streak .fire{display:inline-block;animation:fireFlick .9s ease-in-out infinite alternate;transform-origin:50% 90%}
@@ -854,6 +857,7 @@
     .romi-sound{order:4;padding:10px 14px}
     .re-head{flex-wrap:nowrap}
     .re-label,.re-count{white-space:nowrap}
+    .night-moon{font-size:26px;right:12px;top:8px;opacity:.75}
   }
   /* 태블릿·데스크톱: 요정 얼굴과 글자를 크게 */
   @media (min-width:561px){
