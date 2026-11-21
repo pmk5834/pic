@@ -476,10 +476,8 @@
   .pose-spin .whole{animation:fSpin var(--b2) linear infinite}
   .pose-spin .armL{transform:rotate(75deg)} .pose-spin .armR{transform:rotate(-75deg)}
 
-  @keyframes fJump{0%,100%{transform:none}15%{transform:translateY(5px) scaleY(.93)}45%{transform:translateY(-30px)}75%{transform:translateY(3px) scaleY(.95)}}
-  .pose-bunny .whole,.pose-hooray .whole{animation:fJump var(--b) ease-in-out infinite}
-  .pose-bunny .armL{transform:rotate(118deg)} .pose-bunny .armR{transform:rotate(-118deg)}
   .pose-hooray .armL{transform:rotate(112deg)} .pose-hooray .armR{transform:rotate(-112deg)}
+  .pose-hooray .whole{animation:fBob var(--b) ease-in-out infinite}
 
   @keyframes fBob{0%,100%{transform:none}50%{transform:translateY(-5px) scale(1.03)}}
   .pose-heart .whole{animation:fBob var(--b) ease-in-out infinite}
@@ -528,12 +526,49 @@
   .pose-point .armR{animation:fPoint var(--b) ease-in-out infinite}
   .pose-point .whole{animation:fBob var(--b) ease-in-out infinite}
 
-  @keyframes fFrog{0%,100%{transform:translateY(14px)}20%{transform:translateY(16px)}55%{transform:translateY(-32px)}80%{transform:translateY(8px)}}
-  @keyframes fFrogL{0%,20%,100%{transform:rotate(34deg)}55%{transform:rotate(4deg)}}
-  @keyframes fFrogR{0%,20%,100%{transform:rotate(-34deg)}55%{transform:rotate(-4deg)}}
-  .pose-frog .whole{animation:fFrog var(--b2) ease-in-out infinite}
-  .pose-frog .legL{animation:fFrogL var(--b2) ease-in-out infinite}
-  .pose-frog .legR{animation:fFrogR var(--b2) ease-in-out infinite}
+  /* 🕺 춤 느낌: 모든 동작에 박자마다 무릎을 살짝 굽히는 '그루브'와 발 바꾸기 스텝을 깐다 */
+  .fig .groove{transform-origin:60px 152px;animation:fGroove var(--b) ease-in-out infinite}
+  @keyframes fGroove{0%,100%{transform:translateY(0)}45%{transform:translateY(4px) scaleY(.985)}}
+  @keyframes stepL{0%,100%{transform:rotate(0)}25%{transform:rotate(10deg)}50%{transform:rotate(0)}}
+  @keyframes stepR{0%,100%{transform:rotate(0)}75%{transform:rotate(-10deg)}50%{transform:rotate(0)}}
+  .fig:not(.pose-squat):not(.pose-star):not(.pose-flamingo):not(.pose-spin):not(.pose-tiptoe) .legL{animation:stepL var(--b2) ease-in-out infinite}
+  .fig:not(.pose-squat):not(.pose-star):not(.pose-flamingo):not(.pose-spin):not(.pose-tiptoe) .legR{animation:stepR var(--b2) ease-in-out infinite}
+  .fig.pose-spin .groove,.fig.pose-squat .groove{animation:none}
+
+  /* 👣 옆으로 스텝 터치 */
+  @keyframes fStepSide{0%,100%{transform:translateX(-12px) rotate(-3deg)}50%{transform:translateX(12px) rotate(3deg)}}
+  @keyframes fSwingL{0%,100%{transform:rotate(35deg)}50%{transform:rotate(-15deg)}}
+  @keyframes fSwingR{0%,100%{transform:rotate(15deg)}50%{transform:rotate(-35deg)}}
+  .pose-step .whole{animation:fStepSide var(--b2) ease-in-out infinite}
+  .pose-step .armL{animation:fSwingL var(--b2) ease-in-out infinite}
+  .pose-step .armR{animation:fSwingR var(--b2) ease-in-out infinite}
+
+  /* 🕺 디스코 */
+  @keyframes fDisco{0%,100%{transform:rotate(-140deg)}50%{transform:rotate(-30deg)}}
+  @keyframes fDiscoBody{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+  .pose-disco .armR{animation:fDisco var(--b2) ease-in-out infinite}
+  .pose-disco .armL{transform:rotate(-30deg)}
+  .pose-disco .whole{animation:fDiscoBody var(--b2) ease-in-out infinite}
+
+  /* ✨ 반짝 손 */
+  @keyframes fJazzL{0%,100%{transform:rotate(118deg)}50%{transform:rotate(104deg)}}
+  @keyframes fJazzR{0%,100%{transform:rotate(-118deg)}50%{transform:rotate(-104deg)}}
+  .pose-jazz .armL{animation:fJazzL calc(var(--b) / 2) ease-in-out infinite}
+  .pose-jazz .armR{animation:fJazzR calc(var(--b) / 2) ease-in-out infinite}
+  .pose-jazz .whole{animation:fWiggle var(--b2) ease-in-out infinite}
+
+  /* 🤷 어깨 들썩 */
+  @keyframes fShoulder{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .pose-shoulder .upper{animation:fShoulder calc(var(--b) / 2) ease-in-out infinite}
+  .pose-shoulder .armL{transform:rotate(40deg)} .pose-shoulder .armR{transform:rotate(-40deg)}
+
+  /* 🌊 파도 웨이브 */
+  @keyframes fWaveL{0%,100%{transform:rotate(70deg)}50%{transform:rotate(125deg)}}
+  @keyframes fWaveR{0%,100%{transform:rotate(-125deg)}50%{transform:rotate(-70deg)}}
+  @keyframes fWaveBody{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  .pose-wave .armL{animation:fWaveL var(--b2) ease-in-out infinite}
+  .pose-wave .armR{animation:fWaveR var(--b2) ease-in-out infinite}
+  .pose-wave .upper{animation:fWaveBody var(--b2) ease-in-out infinite}
 
   .pose-tiptoe .armL{transform:rotate(85deg)} .pose-tiptoe .armR{transform:rotate(-85deg)}
 
@@ -1994,29 +2029,31 @@
 
   /* 💃 오늘의 율동: 날짜로 동작 7개를 골라 섞는다 → 매일 바뀌고, 같은 날엔 똑같다 */
   var DANCE_MOVES = [
-    {e:'🙌', t:'두 손 머리 위로 쭉!',          p:'up'},
-    {e:'🌀', t:'제자리에서 빙글빙글!',         p:'spin'},
-    {e:'🐰', t:'토끼처럼 깡충깡충!',           p:'bunny'},
-    {e:'🫶', t:'두 손으로 머리 위에 하트!',    p:'heart'},
-    {e:'👏', t:'박수 짝짝짝!',                 p:'clap'},
-    {e:'🙆', t:'팔 올리고 옆으로 기울이기~',   p:'sway'},
-    {e:'🦵', t:'무릎 굽혔다 펴기!',            p:'squat'},
-    {e:'🐧', t:'펭귄처럼 뒤뚱뒤뚱',            p:'waddle'},
-    {e:'🦋', t:'나비처럼 팔 펄럭펄럭',         p:'flap'},
-    {e:'⭐', t:'팔다리 쫙! 별 모양!',          p:'star'},
-    {e:'💃', t:'엉덩이 흔들흔들~',             p:'wiggle'},
-    {e:'👆', t:'손가락으로 하늘 콕콕!',        p:'point'},
-    {e:'🐸', t:'쪼그려 앉았다 개구리 점프!',   p:'frog'},
-    {e:'🧚', t:'요정처럼 발끝으로 살금살금',   p:'tiptoe'},
-    {e:'🌈', t:'두 팔로 커다란 무지개 그리기', p:'rainbow'},
-    {e:'🤗', t:'나를 꼭 안아 주기',            p:'hug'},
-    {e:'🦩', t:'홍학처럼 한 발로 서기!',       p:'flamingo'},
-    {e:'🚂', t:'칙칙폭폭 팔 빙글빙글 돌리기',  p:'train'},
-    {e:'🐝', t:'꿀벌처럼 팔 파닥파닥',         p:'bee'},
-    {e:'🎉', t:'만세 하고 신나게 점프!',       p:'hooray'}
+    {e:'🙌', t:'두 손 머리 위로 쭉!',            p:'up'},
+    {e:'🌀', t:'제자리에서 빙그르르~',           p:'spin'},
+    {e:'👣', t:'옆으로 스텝, 터치! 스텝, 터치!', p:'step'},
+    {e:'🫶', t:'두 손으로 머리 위에 하트!',      p:'heart'},
+    {e:'👏', t:'박수 짝짝짝!',                   p:'clap'},
+    {e:'🙆', t:'팔 올리고 옆으로 기울이기~',     p:'sway'},
+    {e:'🦵', t:'무릎 굽혔다 펴기!',              p:'squat'},
+    {e:'🐧', t:'펭귄처럼 뒤뚱뒤뚱',              p:'waddle'},
+    {e:'🦋', t:'나비처럼 팔 펄럭펄럭',           p:'flap'},
+    {e:'⭐', t:'팔다리 쫙! 별 모양!',            p:'star'},
+    {e:'💃', t:'엉덩이 흔들흔들~',               p:'wiggle'},
+    {e:'🕺', t:'디스코! 손가락 위로, 아래로!',   p:'disco'},
+    {e:'✨', t:'반짝반짝 손 흔들기!',            p:'jazz'},
+    {e:'🤷', t:'어깨 들썩들썩!',                 p:'shoulder'},
+    {e:'🌊', t:'팔로 파도 웨이브~',              p:'wave'},
+    {e:'🧚', t:'요정처럼 발끝으로 살금살금',     p:'tiptoe'},
+    {e:'🌈', t:'두 팔로 커다란 무지개 그리기',   p:'rainbow'},
+    {e:'🤗', t:'나를 꼭 안아 주기',              p:'hug'},
+    {e:'🦩', t:'홍학처럼 한 발로 서기!',         p:'flamingo'},
+    {e:'🚂', t:'칙칙폭폭 팔 빙글빙글 돌리기',    p:'train'},
+    {e:'🐝', t:'꿀벌처럼 팔 파닥파닥',           p:'bee'},
+    {e:'👆', t:'손가락으로 하늘 콕콕!',          p:'point'}
   ];
-  var DANCE_NAMES = ['반짝 요정 댄스', '하트 뿅뿅 댄스', '무지개 점프 댄스', '로미의 아침 체조', '깡충깡충 동물 댄스',
-                     '별빛 빙글 댄스', '꿀벌 윙윙 댄스', '방방 신나 댄스', '나비 팔랑 댄스', '요정 나라 행진'];
+  var DANCE_NAMES = ['반짝 요정 댄스', '하트 뿅뿅 댄스', '무지개 점프 댄스', '로미의 아침 체조', '뒤뚱뒤뚱 동물 댄스',
+                     '별빛 빙글 댄스', '꿀벌 윙윙 댄스', '디스코 요정 댄스', '나비 팔랑 댄스', '요정 나라 행진'];
   function seededRand(seed){
     var x = Math.floor(dayLuck(seed) * 4294967296) || 1;
     return function(){ x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
@@ -2083,9 +2120,11 @@
   /* 한 박자 연주. part: 'A' | 'B' | 'S', beatNo: 곡 안에서 몇 번째 박자인지, beatMs: 박자 길이 */
   function playBeat(part, beatNo, beatMs, key){
     var ac = audioCtx();
-    if (!ac) return;
+    if (ac) playBeatAt(ac, ac.currentTime + 0.02, part, beatNo, beatMs, key);
+  }
+  function playBeatAt(ac, t, part, beatNo, beatMs, key){
     try{
-      var t = ac.currentTime + 0.02, half = beatMs / 2000, sec = part === 'S' ? SONG.S : SONG[part];
+      var half = beatMs / 2000, sec = part === 'S' ? SONG.S : SONG[part];
       var bars = sec.mel.length, bar = Math.floor(beatNo / 4) % bars, inBar = beatNo % 4;
       var root = sec.chords[bar % sec.chords.length];
       var slow = part === 'S';
@@ -2118,11 +2157,12 @@
       });
     }catch(e){}
   }
-  function stingSound(kind){   // 얼음! / 땡! / 마지막 팡파레
+  function stingSound(kind){
     var ac = audioCtx();
-    if (!ac) return;
+    if (ac) stingAt(ac, ac.currentTime + 0.02, kind);
+  }
+  function stingAt(ac, t, kind){   // 얼음! / 땡! / 마지막 팡파레
     try{
-      var t = ac.currentTime + 0.02;
       if (kind === 'freeze'){
         [1568, 1319, 1047, 784].forEach(function(f, i){ tone(ac, 'sine', f, t + i * 0.06, 0.25, 0.08); });
         noiseHit(ac, t, 0.5, 0.06, 5000);
@@ -2135,6 +2175,58 @@
   }
   /* 예전 함수 이름 유지 (준비 박자 소리) */
   function beatSound(n){ playBeat('A', n, 600, 0); }
+
+  /* 🎧 율동 음악은 미리 '녹음 파일(WAV)'로 만들어 <audio>로 튼다.
+     아이폰·아이패드는 무음 스위치가 켜져 있으면 웹 효과음(WebAudio)이 안 나는데, <audio> 재생은 나온다.
+     얼음 땡으로 멈추는 구간·효과음까지 한 파일에 들어 있어서 그림과 소리가 어긋나지 않는다. */
+  function wavUrl(buf){
+    var ch = buf.getChannelData(0), n = ch.length, sr = buf.sampleRate;
+    var ab = new ArrayBuffer(44 + n * 2), v = new DataView(ab);
+    function str(o, t){ for (var i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); }
+    str(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    str(36, 'data'); v.setUint32(40, n * 2, true);
+    var peak = 0;
+    for (var i = 0; i < n; i++){ var a = Math.abs(ch[i]); if (a > peak) peak = a; }
+    var gain = peak > 0.95 ? 0.95 / peak : 1;
+    for (var j = 0; j < n; j++){
+      var x = Math.max(-1, Math.min(1, ch[j] * gain));
+      v.setInt16(44 + j * 2, x < 0 ? x * 0x8000 : x * 0x7FFF, true);
+    }
+    return URL.createObjectURL(new Blob([ab], {type: 'audio/wav'}));
+  }
+  /* 진행표(시간표)대로 곡 전체를 미리 만든다 */
+  function renderDanceTrack(show){
+    var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!OAC) return Promise.resolve(null);
+    var sr = 22050, len = Math.ceil((show.length + 1500) / 1000 * sr);
+    var ac;
+    try{ ac = new OAC(1, len, sr); }catch(e){ return Promise.resolve(null); }
+    var key = show.d.key;
+    /* 시작 안내 동안 잔잔한 반주 */
+    [0, 1700].forEach(function(ms, i){
+      var root = i ? 7 : 0;
+      [root, root + 4, root + 7].forEach(function(n){ tone(ac, 'sine', hz(n, key), ms / 1000, 1.8, 0.035); });
+      tone(ac, 'triangle', hz(root - 12, key), ms / 1000, 1.6, 0.06);
+    });
+    show.events.forEach(function(ev){
+      var t = ev.at / 1000;
+      if (ev.type === 'count') playBeatAt(ac, t, 'A', ev.n, 700, key);
+      else if (ev.type === 'beat') playBeatAt(ac, t, ev.part, ev.songBeat, ev.beatMs, key);
+      else if (ev.type === 'freeze') stingAt(ac, t, 'freeze');
+      else if (ev.type === 'go') stingAt(ac, t, 'go');
+      else if (ev.type === 'end') stingAt(ac, t, 'end');
+    });
+    return new Promise(function(res){
+      var done = function(buf){ try{ res(buf ? wavUrl(buf) : null); }catch(e){ res(null); } };
+      try{
+        var r = ac.startRendering();
+        if (r && r.then) r.then(done, function(){ res(null); });
+        else ac.oncomplete = function(e){ done(e.renderedBuffer); };
+      }catch(e){ res(null); }
+    });
+  }
 
   /* 한국어 동작 안내 목소리 (🔊 켜져 있을 때만) */
   var koVoiceCache = null;
@@ -2163,7 +2255,7 @@
   /* 꼬마 요정 인형 (팔·다리는 따로 움직인다) */
   var FIG_SVG = '<svg class="fig" viewBox="0 0 120 160" aria-hidden="true">'
     + '<ellipse class="floor" cx="60" cy="154" rx="34" ry="5"/>'
-    + '<g class="whole">'
+    + '<g class="groove"><g class="whole">'
     +   '<g class="legL"><line class="limb" x1="53" y1="102" x2="49" y2="138"/><ellipse class="shoe" cx="47" cy="142" rx="8" ry="5.5"/></g>'
     +   '<g class="legR"><line class="limb" x1="67" y1="102" x2="71" y2="138"/><ellipse class="shoe" cx="73" cy="142" rx="8" ry="5.5"/></g>'
     +   '<g class="upper">'
@@ -2181,7 +2273,7 @@
     +     '<g class="armL"><line class="limb" x1="47" y1="70" x2="33" y2="98"/><line class="sleeve" x1="47" y1="70" x2="43" y2="77"/><circle class="hand" cx="33" cy="99" r="5.8"/></g>'
     +     '<g class="armR"><line class="limb" x1="73" y1="70" x2="87" y2="98"/><line class="sleeve" x1="73" y1="70" x2="77" y2="77"/><circle class="hand" cx="87" cy="99" r="5.8"/></g>'
     +   '</g>'
-    + '</g></svg>';
+    + '</g></g></svg>';
 
   var danceRun = null;
   /* 💃 율동 진행표: 동작마다 박자 길이·박자 수·노래 부분이 다르고, 중간에 '얼음 땡'이 3번 끼어든다
@@ -2207,10 +2299,61 @@
     return plan;
   }
   var FREEZE_LINES = ['얼음! 그대로 멈춰!', '얼음! 움직이면 안 돼~', '얼음! 꼼짝 마!', '얼음! 동상처럼 딱!'];
+  var INTRO_MS = 3400, COUNT_MS = 700;
+  /* 한 판의 시간표(밀리초)를 만든다: 소리 파일과 화면이 같은 시간표를 쓴다 */
+  function buildDanceShow(){
+    var d = todaysDance(), plan = danceSchedule(d), ev = [];
+    ev.push({at: 150, type: 'intro'});
+    for (var i = 0; i < 3; i++) ev.push({at: INTRO_MS + i * COUNT_MS, type: 'count', n: i});
+    var T = INTRO_MS + 3 * COUNT_MS, songBeat = 0;
+    plan.forEach(function(st, k){
+      ev.push({at: T, type: 'move', k: k});
+      for (var b = 0; b < st.beats; b++){
+        ev.push({at: T, type: 'beat', k: k, b: b, part: st.part, songBeat: songBeat, beatMs: st.beat, fast: st.beats === 8});
+        T += st.beat; songBeat++;
+        if (st.freezeAt === b + 1){
+          ev.push({at: T, type: 'freeze', k: k, line: FREEZE_LINES[(Math.random() * FREEZE_LINES.length) | 0]});
+          T += st.freezeMs;
+          ev.push({at: T, type: 'go', k: k});
+          T += 500;
+        }
+      }
+    });
+    ev.push({at: T, type: 'end'});
+    ev.push({at: T + 4500, type: 'close'});
+    return {d: d, plan: plan, events: ev, length: T + 3000, url: null, date: todayIso()};
+  }
+  /* 다음 판을 미리 준비해 둔다 (얼음 위치는 판마다 새로) */
+  var nextShow = null, preparing = false;
+  function prepareDance(){
+    if (preparing) return;
+    preparing = true;
+    var sh = buildDanceShow();
+    renderDanceTrack(sh).then(function(url){
+      sh.url = url; nextShow = sh; preparing = false;
+    }, function(){ nextShow = sh; preparing = false; });
+  }
+  var danceAudio = null;
   function startDance(){
     if (danceRun || !document.body) return;
-    var d = todaysDance();
-    var plan = danceSchedule(d);
+    var sh = (nextShow && nextShow.date === todayIso()) ? nextShow : buildDanceShow();
+    nextShow = null;
+    var d = sh.d, plan = sh.plan;
+
+    /* 소리: 누른 그 순간에 재생을 시작해야 아이폰이 허락한다 */
+    var audio = null;
+    if (romiSound && sh.url){
+      try{
+        if (navigator.audioSession) navigator.audioSession.type = 'playback';
+      }catch(e){}
+      if (!danceAudio){ danceAudio = new Audio(); danceAudio.setAttribute('playsinline', ''); danceAudio.preload = 'auto'; }
+      audio = danceAudio;
+      try{ if (audio.src && audio.src !== sh.url) URL.revokeObjectURL(audio.src); }catch(e){}
+      audio.src = sh.url; audio.currentTime = 0; audio.volume = 1;
+      var pp = audio.play();
+      if (pp && pp.catch) pp.catch(function(){ audio = null; });
+    }
+
     var ov = document.createElement('div');
     ov.className = 'dance-ov c0';
     ov.setAttribute('role', 'dialog');
@@ -2261,78 +2404,96 @@
       setTimeout(function(){ if (r.parentNode) r.parentNode.removeChild(r); }, 600);
     }
 
-    var timers = [];
-    danceRun = {timers: timers};
-    function at(ms, fn){ timers.push(setTimeout(function(){ if (danceRun) fn(); }, ms)); }
+    /* 시계: 음악이 나오면 음악 재생 위치를 따라가고, 안 나오면 자체 시계로 */
+    var t0 = performance.now(), base = 0, lastAudio = -1, stuckSince = 0;
+    function now(){
+      if (audio && !audio.ended){
+        var at = audio.currentTime * 1000;
+        if (!audio.paused && at > 0){
+          base = at; t0 = performance.now(); lastAudio = at; stuckSince = 0;
+          return at;
+        }
+        /* 음악이 멈춰 버리면(음성 안내 등) 잠깐 기다렸다가 다시 틀고, 그래도 안 되면 자체 시계로 */
+        if (!stuckSince) stuckSince = performance.now();
+        if (performance.now() - stuckSince > 900){
+          try{ audio.currentTime = (base + performance.now() - t0) / 1000; var q = audio.play(); if (q && q.catch) q.catch(function(){ audio = null; }); }catch(e){ audio = null; }
+          stuckSince = performance.now();
+        }
+      }
+      return base + (performance.now() - t0);
+    }
+
+    var colorNo = 0, idx = 0, evs = sh.events, ticker = null;
+    function fire(ev){
+      var st = plan[ev.k];
+      switch (ev.type){
+        case 'intro':
+          if (!audio) koSay('오늘의 율동, ' + d.name + '! 음악이 멈추면 얼음! 하고 멈춰야 해!');   // 음악이 나올 땐 목소리가 음악을 끊지 않게 생략
+          show('🧊', '음악이 멈추면 "얼음!" 멈춰요'); nextIs(-1); break;
+        case 'count':
+          show(['3', '2', '1'][ev.n], '준비~');
+          if (!audio) playBeat('A', ev.n, COUNT_MS, d.key);
+          break;
+        case 'move':
+          setTempo(st.beat); show(st.mv.e, st.mv.t); pose(st.mv.p); nextIs(ev.k);
+          modeEl.textContent = st.mode;
+          prog.style.width = ((ev.k + 0.5) / plan.length * 100).toFixed(1) + '%';
+          if (!audio) koSay((st.part === 'S' ? '천천히, ' : '') + st.mv.t.replace(/[~!]/g, ''), st.part === 'S' ? 0.9 : 1.15);
+          break;
+        case 'beat':
+          for (var q = 0; q < dots.length; q++) dots[q].classList.toggle('on', q === ev.b % 4);
+          mini.classList.remove('bop'); void mini.offsetWidth; mini.classList.add('bop');
+          if (!audio) playBeat(ev.part, ev.songBeat, ev.beatMs, d.key);
+          if (ev.part === 'S') bg('slow');
+          else { bg('c' + (colorNo++ % 4) + (ev.fast ? ' fast' : '')); ring(); }
+          if (ev.b % 4 === 0) drop(ev.part === 'S' ? ['🫧', '☁️'] : ['💖', '✨', '⭐', '🎵', '🌸'], ev.fast ? 5 : 3);
+          break;
+        case 'freeze':
+          bg('frozen'); if (!audio) stingSound('freeze');
+          show('🧊', ev.line); modeEl.textContent = '❄️ 얼음 ❄️';
+          for (var r = 0; r < dots.length; r++) dots[r].classList.remove('on');
+          if (!audio) koSay('얼음!', 1.1);
+          break;
+        case 'go':
+          if (!audio) stingSound('go');
+          bg('c0'); modeEl.textContent = st.mode;
+          show('🔥', '땡! 다시 춤춰요!');
+          drop(['🎉', '✨', '💥'], 8);
+          break;
+        case 'end':
+          prog.style.width = '100%'; modeEl.textContent = '';
+          for (var z = 0; z < dots.length; z++) dots[z].classList.remove('on');
+          bg('c2'); pose('jazz'); nextEl.innerHTML = '';
+          show('🏆', '최고의 댄서! 얼음 땡도 완벽해!');
+          if (!audio) stingSound('end');
+          romiChime(true);
+          sparkBurst(fig, 20, 3);
+          drop(['💖', '✨', '⭐', '🎵', '🌸', '💫', '🏆'], 40);
+          romiSay('💃 ' + d.name + ' 완성!', '내일은 새로운 율동이 기다려요', 5000);
+          break;
+        case 'close':
+          close(); break;
+      }
+    }
+    function tick(){
+      if (!danceRun) return;
+      var t = now();
+      while (idx < evs.length && evs[idx].at <= t){ var e = evs[idx++]; try{ fire(e); }catch(err){} if (!danceRun) return; }
+    }
+    danceRun = {};
+    ticker = setInterval(tick, 25);
     function close(){
       if (!danceRun) return;
-      danceRun.timers.forEach(clearTimeout);
       danceRun = null;
+      clearInterval(ticker);
+      try{ if (audio){ audio.pause(); } }catch(e){}
       try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
       ov.classList.add('out');
       setTimeout(function(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }, 420);
+      setTimeout(prepareDance, 800);     // 다음 판 준비 (얼음 위치 새로)
     }
     ov.querySelector('.dance-x').addEventListener('click', function(e){ e.stopPropagation(); close(); });
-
-    /* ---- 진행표를 시간표로 펼친다 ---- */
-    var T = 200, songBeat = 0, colorNo = 0;
-    at(T, function(){ koSay('오늘의 율동, ' + d.name + '! 음악이 멈추면 얼음! 하고 멈춰야 해!'); show('🧊', '음악이 멈추면 "얼음!" 멈춰요'); nextIs(-1); });
-    T = 3600;
-    ['3', '2', '1'].forEach(function(n, i){
-      at(T + i * 700, function(){ show(n, '준비~'); playBeat('A', i, 700, d.key); koSay(['셋', '둘', '하나'][i], 1.2); });
-    });
-    T += 3 * 700;
-    plan.forEach(function(st, k){
-      at(T, function(){
-        setTempo(st.beat); show(st.mv.e, st.mv.t); pose(st.mv.p); nextIs(k);
-        modeEl.textContent = st.mode;
-        prog.style.width = ((k + 0.5) / plan.length * 100).toFixed(1) + '%';
-        koSay((st.part === 'S' ? '천천히, ' : '') + st.mv.t.replace(/[~!]/g, ''), st.part === 'S' ? 0.9 : 1.15);
-      });
-      for (var b = 0; b < st.beats; b++){
-        (function(b, sb){
-          at(T, function(){
-            for (var q = 0; q < dots.length; q++) dots[q].classList.toggle('on', q === b % 4);
-            mini.classList.remove('bop'); void mini.offsetWidth; mini.classList.add('bop');
-            playBeat(st.part, sb, st.beat, d.key);
-            if (st.part === 'S') bg('slow');
-            else { bg('c' + (colorNo++ % 4) + (st.beats === 8 ? ' fast' : '')); ring(); }
-            if (b % 4 === 0) drop(st.part === 'S' ? ['🫧', '☁️'] : ['💖', '✨', '⭐', '🎵', '🌸'], st.beats === 8 ? 5 : 3);
-          });
-        })(b, songBeat);
-        T += st.beat; songBeat++;
-        /* 🧊 얼음! */
-        if (st.freezeAt === b + 1){
-          (function(ms, line){
-            at(T, function(){
-              bg('frozen'); stingSound('freeze');
-              show('🧊', line); modeEl.textContent = '❄️ 얼음 ❄️';
-              koSay('얼음!', 1.1);
-              for (var q = 0; q < dots.length; q++) dots[q].classList.remove('on');
-            });
-            at(T + ms, function(){
-              stingSound('go'); bg('c0'); modeEl.textContent = st.mode;
-              show('🔥', '땡! 다시 춤춰요!'); koSay('땡!', 1.2);
-              drop(['🎉', '✨', '💥'], 8);
-            });
-            T += ms + 500;
-          })(st.freezeMs, FREEZE_LINES[(Math.random() * FREEZE_LINES.length) | 0]);
-        }
-      }
-    });
-    at(T, function(){
-      prog.style.width = '100%'; modeEl.textContent = '';
-      for (var q = 0; q < dots.length; q++) dots[q].classList.remove('on');
-      bg('c2'); pose('hooray'); nextEl.innerHTML = '';
-      show('🏆', '최고의 댄서! 얼음 땡도 완벽해!');
-      stingSound('end');
-      koSay('최고의 댄서! 정말 잘했어!', 1.05);
-      romiChime(true);
-      sparkBurst(fig, 20, 3);
-      drop(['💖', '✨', '⭐', '🎵', '🌸', '💫', '🏆'], 40);
-      romiSay('💃 ' + d.name + ' 완성!', '내일은 새로운 율동이 기다려요', 5000);
-    });
-    at(T + 4500, close);
+    tick();
   }
 
   /* 💗 로미 쓰다듬기: 누르면 꼼지락 + 하트 퐁퐁 + 한마디 */
@@ -3223,6 +3384,7 @@
     /* 로미 쓰다듬기 · 오늘의 율동 */
     $('romiFaceWrap').addEventListener('click', romiPet);
     $('romiDance').addEventListener('click', function(){ unlockAudio(); startDance(); });
+    setTimeout(prepareDance, 1500);     // 율동 음악을 미리 만들어 둔다
     $('romiFaceWrap').setAttribute('role', 'button');
     $('romiFaceWrap').setAttribute('aria-label', '로미 쓰다듬기');
 
