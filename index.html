@@ -666,6 +666,21 @@
   .todo-done-banner b{color:#D6336C;font-weight:900}
   .todo-done-banner span{display:block;margin-top:2px;font-size:12.5px;font-weight:700;color:#B5719A}
   .todo-done-banner[hidden]{display:none}
+  .fm-ov{position:fixed;inset:0;z-index:9995;background:rgba(60,40,55,.42);display:flex;align-items:center;justify-content:center;padding:16px}
+  .fm-box{background:#FFFDF9;border-radius:22px;width:min(460px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden}
+  .fm-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 6px;font-size:17px;color:#A23B72}
+  .fm-x{border:none;background:#F7EDF2;color:#A23B72;width:36px;height:36px;border-radius:12px;font-size:16px;cursor:pointer}
+  .fm-msg{margin:0 18px 8px;font-size:13px;color:#8A6B7B}
+  .fm-list{overflow:auto;padding:4px 14px;display:flex;flex-direction:column;gap:8px}
+  .fm-row{display:flex;align-items:center;gap:10px;padding:6px;border-radius:14px;background:#FFF5F9}
+  .fm-row img{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:0 0 auto;box-shadow:0 0 0 3px #fff,0 0 0 5px #F9C9DE}
+  .fm-row input{flex:1 1 auto;min-width:0;font:inherit;font-size:16px;font-weight:700;padding:10px 12px;border-radius:12px;border:1.5px solid #F2DFE7;background:#fff;color:#3E3530}
+  .fm-tag{flex:0 0 auto;font-size:11px;font-weight:800;color:#B6A9A1;padding:3px 8px;border-radius:999px;background:#F2ECE8}
+  .fm-tag.new{color:#D2669A;background:#FFE3EE}
+  .fm-foot{display:flex;gap:8px;padding:12px 14px 16px}
+  .fm-foot .btn{flex:1 1 auto}
+  .fm-foot .fm-add{background:#F3EBFF;color:#7A4DB8}
   .hold-help{font-size:11px;color:#B6A9A1;margin:6px 2px 0}
   .tc-fairy{
     width:58px;height:58px;border-radius:15px;flex:0 0 auto;
@@ -1030,7 +1045,7 @@
               <span class="count">목표 <select class="goal" id="goal" aria-label="목표 요정 수"></select></span>
               <button class="mini" id="starReset" type="button" title="오늘 할 일 체크만 초기화합니다. 모은 요정은 그대로 남아요.">오늘 할 일 리셋</button>
               <button class="mini hold-btn" id="dexClear" type="button" title="보상을 준 뒤 길게 눌러 도감을 비웁니다.">🎁 도감 비우기</button>
-              <button class="mini hold-btn" id="fairyAdd" type="button" title="부모용: 2초 길게 눌러 요정 그림을 추가합니다.">🧚 요정 추가</button>
+              <button class="mini hold-btn" id="fairyAdd" type="button" title="부모용: 2초 길게 눌러 요정 이름을 바꾸거나 새 요정을 추가합니다.">🧚 요정 관리</button>
               <input type="file" id="fairyFile" accept="image/*" multiple hidden>
             </div>
             <div class="reward-row">
@@ -1480,6 +1495,11 @@
   function rebuildFairies(){
     FAIRIES.length = BASE_FAIRIES;
     var names = (state && state.fairyNames && typeof state.fairyNames === 'object') ? state.fairyNames : {};
+    for (var bi = 0; bi < BASE_FAIRIES; bi++){
+      var bf = FAIRIES[bi];
+      if (!bf.defName) bf.defName = bf.name;
+      bf.name = names[bf.file] || bf.defName;
+    }
     var keys = (state && state.fairyKeys && typeof state.fairyKeys === 'object') ? state.fairyKeys : {};
     customFairyFiles().forEach(function(file){
       var n = parseInt(file.match(CUSTOM_FAIRY_RE)[1], 10), base = FAIRIES[(n - 1) % BASE_FAIRIES];
@@ -1511,20 +1531,28 @@
      · 두 칸 앞과도 되도록 겹치지 않게, 점수가 같으면 순서대로 돌려 쓴다
      · 그 위에 글자와 어울리는 요정 점수를 더한다 (앞 카드와 겹치면 다음 후보로 밀린다) */
   function assignFairies(items){
-    var out = [], used = [0, 0, 0, 0], last = [-99, -99, -99, -99], prev = -1, prev2 = -1;
+    /* 요정이 할 일 수만큼 있으면 카드마다 다른 요정 (겹치지 않음). 모자라면 다 쓴 뒤에만 다시 쓴다.
+       · 바로 앞 카드와 같은 색은 되도록 피하고, 두 칸 앞과도 되도록 다르게
+       · 글자와 어울리는 색의 요정을 먼저
+       · 점수가 같으면 날마다 다른 순서로 → 같은 할 일이라도 날마다 요정이 바뀐다 */
+    var n = FAIRIES.length, out = [], used = {}, usedCount = 0, prevKey = null, prev2Key = null;
+    var groupOf = function(f){ for (var g = 0; g < BASE_FAIRIES; g++) if (FAIRIES[g].key === f.key) return g; return 0; };
+    var day = todayIso();
+    function luck(k){ var h = 0, sd = day + '#' + k; for (var j = 0; j < sd.length; j++) h = (h * 31 + sd.charCodeAt(j)) >>> 0; return (h % 1000) / 1000; }
     for (var i = 0; i < items.length; i++){
+      if (usedCount >= n){ used = {}; usedCount = 0; }
       var sc = fairyScores(items[i] && items[i].text);
       var best = 0, bestScore = -Infinity;
-      for (var k = 0; k < 4; k++){
-        if (k === prev) continue;                        // 앞 카드와 같은 요정·색은 쓰지 않는다
-        var gap = Math.min(4, i - last[k]);              // 오래 비어 있던 요정을 먼저
-        var v = sc[k] * 10 + gap * 1.5 - used[k] * 4;
-        if ((k - i) % 4 === 0) v += 0.5;                 // 점수가 같으면 순서대로 돌려 쓴다
-        if (k === prev2) v -= 3;                         // 두 칸 앞과도 되도록 겹치지 않게
+      for (var k = 0; k < n; k++){
+        if (used[k]) continue;
+        var f = FAIRIES[k], v = sc[groupOf(f)] * 10 + luck(k);
+        if (f.key === prevKey) v -= 100;          // 앞 카드와 같은 색은 마지막 수단
+        if (f.key === prev2Key) v -= 3;
         if (v > bestScore){ bestScore = v; best = k; }
       }
       out.push(best);
-      used[best]++; last[best] = i; prev2 = prev; prev = best;
+      used[best] = 1; usedCount++;
+      prev2Key = prevKey; prevKey = FAIRIES[best].key;
     }
     return out;
   }
@@ -1569,15 +1597,6 @@
 
   /* ---------------- todos (오늘 할 일 요정 카드) ----------------
      카드는 눌러서 완료만 할 수 있다 (순서 이동·내용 수정·삭제 버튼은 뺐다). */
-  /* 같은 색 요정이 여러 마리면(추가한 요정) 할 일마다 정해진 한 마리를 고른다: 날마다 얼굴이 바뀐다 */
-  function faceFor(group, it){
-    var key = FAIRIES[group].key, members = [];
-    for (var i = 0; i < FAIRIES.length; i++) if (FAIRIES[i].key === key) members.push(i);
-    if (members.length < 2) return group;
-    var h = 0, sd = String(it && it.id) + todayIso();
-    for (var j = 0; j < sd.length; j++) h = (h * 31 + sd.charCodeAt(j)) >>> 0;
-    return members[h % members.length];
-  }
   /* 사진 → 가운데를 네모로 잘라 360px JPEG data URL */
   function squareJpeg(file){
     return new Promise(function(res, rej){
@@ -1619,6 +1638,46 @@
       return 'pink';
     }catch(e){ return 'pink'; }
   }
+  /* 🧚 요정 관리 창: 사진 옆에서 이름을 고치고, '사진으로 요정 추가'를 누르면 바로 사진 고르기 (아이폰도 OK) */
+  function openFairyManager(msg){
+    var old = document.querySelector('.fm-ov');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    rebuildFairies();
+    var ov = document.createElement('div');
+    ov.className = 'fm-ov';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-label', '요정 관리');
+    var rows = FAIRIES.map(function(f, i){
+      return '<label class="fm-row"><img src="' + f.img + '" alt=""><input type="text" maxlength="12" data-file="' + esc(f.file) + '" value="' + esc(f.name) + '">'
+        + (i < BASE_FAIRIES ? '<span class="fm-tag">기본</span>' : '<span class="fm-tag new">추가</span>') + '</label>';
+    }).join('');
+    ov.innerHTML = '<div class="fm-box">'
+      + '<div class="fm-head"><b>🧚 요정 관리</b><button type="button" class="fm-x" aria-label="닫기">✕</button></div>'
+      + (msg ? '<p class="fm-msg">' + esc(msg) + '</p>' : '<p class="fm-msg">사진을 보고 이름을 고친 뒤 저장을 눌러 주세요</p>')
+      + '<div class="fm-list">' + rows + '</div>'
+      + '<div class="fm-foot"><button type="button" class="btn fm-add">📷 사진으로 요정 추가</button><button type="button" class="btn fm-save">저장</button></div>'
+      + '</div>';
+    document.body.appendChild(ov);
+    function close(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    ov.querySelector('.fm-x').addEventListener('click', close);
+    ov.addEventListener('click', function(e){ if (e.target === ov) close(); });
+    ov.querySelector('.fm-add').addEventListener('click', function(){
+      if (!pin){ alert('인터넷에 연결된 상태에서만 요정을 추가할 수 있어요'); return; }
+      $('fairyFile').value = '';
+      $('fairyFile').click();
+    });
+    ov.querySelector('.fm-save').addEventListener('click', function(){
+      if (!state.fairyNames || typeof state.fairyNames !== 'object') state.fairyNames = {};
+      var ins = ov.querySelectorAll('input[data-file]');
+      for (var i = 0; i < ins.length; i++){
+        var file = ins[i].getAttribute('data-file'), v = ins[i].value.trim().slice(0, 12);
+        if (v) state.fairyNames[file] = v; else delete state.fairyNames[file];
+      }
+      save(); rebuildFairies(); renderTodos(); renderStars(-1);
+      close();
+      starNote('🧚 요정 이름을 저장했어요', true);
+    });
+  }
   function addFairies(files){
     var used = customFairyFiles().map(function(n){ return parseInt(n.match(CUSTOM_FAIRY_RE)[1], 10); });
     var next = 1, added = 0, failed = 0;
@@ -1632,17 +1691,16 @@
           if (no > 99) throw new Error('too many');
           return rpc('save_dashboard_asset', {pin_input: pin, asset_name: name, asset_data: data}).then(function(){
             ASSETS[name] = data; added++;
-            var nm = prompt((i + 1) + '번째 요정 이름을 지어 주세요', '요정 친구 ' + (BASE_FAIRIES + no));
             if (!state.fairyNames || typeof state.fairyNames !== 'object') state.fairyNames = {};
             if (!state.fairyKeys || typeof state.fairyKeys !== 'object') state.fairyKeys = {};
             state.fairyKeys[name] = pic.key;
-            state.fairyNames[name] = (nm && nm.trim()) ? nm.trim().slice(0, 12) : ('요정 친구 ' + (BASE_FAIRIES + no));
           });
         }).catch(function(e){ failed++; window.__fairyErr = String(e && (e.code || e.message) || e); });
       });
     });
     chain.then(function(){
       storeAssets(); save(); applyAssets();
+      if (added) openFairyManager('새 요정 ' + added + '마리가 들어왔어요! 사진을 보고 이름을 지어 주세요 ✏️');
       if (added && !failed) starNote('🧚 새 요정 ' + added + '마리가 들어왔어요! 할 일 카드에서 만나요', true);
       else if (added) starNote('🧚 ' + added + '마리 추가, ' + failed + '장은 못 올렸어요', false);
       else alert('요정을 올리지 못했어요.\nSupabase에서 supabase-fairies.sql 을 먼저 실행했는지 확인해 주세요.');
@@ -1657,7 +1715,7 @@
     } else {
       var picks = assignFairies(items);
       list.innerHTML = items.map(function(it, i){
-        var fi = faceFor(picks[i], it), f = FAIRIES[fi];
+        var fi = picks[i], f = FAIRIES[fi];
         return '<li class="todo-card k-' + f.key + (it.done ? ' done' : '') + '"'
             + ' data-toggle="' + esc(it.id) + '" data-kind="todo" data-todo-id="' + esc(it.id) + '"'
             + ' data-fairy="' + fi + '" role="button" tabindex="0" aria-pressed="' + (it.done ? 'true' : 'false') + '"'
@@ -3559,24 +3617,12 @@
     });
 
     /* 🧚 요정 추가 (부모용): 2초 길게 눌러 사진을 고르면 네모로 잘라 보관함에 올린다 */
-    /* 사진 고르기 창은 '손가락을 뗀 터치'로만 열린다(아이폰 규칙) → 길게 누르면 버튼이 열리고, 한 번 더 누르면 사진 선택 */
-    var fairyArmed = 0;
+    /* 🧚 요정 관리 (부모용): 2초 길게 누르면 요정 목록이 열린다 — 이름 바꾸기, 사진으로 요정 추가 */
     $('fairyAdd').addEventListener('click', function(){
       if (Date.now() < holdSuppressUntil) return;
-      if (Date.now() < fairyArmed){
-        fairyArmed = 0; this.textContent = '🧚 요정 추가';
-        $('fairyFile').value = '';
-        $('fairyFile').click();
-        return;
-      }
-      starNote('🧚 요정 추가는 버튼을 2초 길게 눌러 주세요', false);
+      starNote('🧚 요정 관리는 버튼을 2초 길게 눌러 주세요', false);
     });
-    onLongPress($('fairyAdd').parentNode, '#fairyAdd', function(btn){
-      if (!pin){ alert('인터넷에 연결된 상태에서만 요정을 추가할 수 있어요'); return; }
-      fairyArmed = Date.now() + 15000;
-      btn.textContent = '📷 눌러서 사진 고르기';
-      setTimeout(function(){ if (fairyArmed && Date.now() >= fairyArmed){ fairyArmed = 0; btn.textContent = '🧚 요정 추가'; } }, 15200);
-    });
+    onLongPress($('fairyAdd').parentNode, '#fairyAdd', function(){ openFairyManager(); });
     $('fairyFile').addEventListener('change', function(){
       var files = Array.prototype.slice.call(this.files || []);
       if (!files.length) return;
