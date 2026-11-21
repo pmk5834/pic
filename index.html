@@ -392,6 +392,9 @@
   /* 💃 오늘의 율동 */
   .romi-dance{flex:0 0 auto;border:1px solid #F2DFE7;background:linear-gradient(135deg,#FFF0F6,#F3EBFF);color:#B5487A;cursor:pointer;
     font-family:inherit;line-height:1;font-size:13px;font-weight:800;padding:8px 10px;border-radius:11px;white-space:nowrap}
+  .romi-mail{position:relative}
+  .romi-mail[hidden]{display:none}
+  .romi-mail.new::after{content:'';position:absolute;right:-3px;top:-3px;width:11px;height:11px;border-radius:50%;background:#F03E7E;box-shadow:0 0 0 2px #fff}
   .romi-dance:active{transform:scale(.94)}
   .dance-ov{position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
     overflow:hidden;padding:20px;text-align:center;
@@ -681,6 +684,10 @@
   .praise-msg{max-width:640px;font-size:clamp(28px,7vmin,48px);font-weight:900;color:#D6336C;line-height:1.25;word-break:keep-all;
     text-shadow:0 2px 0 #fff,0 0 18px #fff;animation:titleIn .6s cubic-bezier(.34,1.56,.64,1) .55s both}
   .praise-tap{font-size:13px;color:#A0617F;opacity:.8;animation:titleIn .4s ease 1.4s both}
+  .pb-row{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:none;font:inherit;cursor:pointer;
+    background:#FFF5F9;border-radius:14px;padding:12px 14px}
+  .pb-from{font-size:12px;font-weight:800;color:#B5719A}
+  .pb-msg{font-size:17px;font-weight:900;color:#C2255C;word-break:keep-all}
   .fm-ov{position:fixed;inset:0;z-index:9995;background:rgba(60,40,55,.42);display:flex;align-items:center;justify-content:center;padding:16px}
   .fm-box{background:#FFFDF9;border-radius:22px;width:min(460px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;
     box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden}
@@ -943,6 +950,7 @@
     .romi-bar{flex-wrap:wrap;row-gap:8px}
     .romi-bubble{flex:1 1 calc(100% - 82px);max-width:none}
     .romi-dance{order:3;flex:1 1 auto;padding:10px 12px;font-size:14px}
+    .romi-mail{flex:0 0 auto}
     .romi-sound{order:4;padding:10px 14px}
     .re-head{flex-wrap:nowrap}
     .re-label,.re-count{white-space:nowrap}
@@ -1053,6 +1061,7 @@
                 </div>
               </div>
             </div>
+            <button class="romi-dance romi-mail" id="praiseBox" type="button" title="받은 칭찬 다시 보기" hidden>💌 <span id="praiseCount">0</span></button>
             <button class="romi-dance" id="romiDance" type="button" title="요정 친구랑 오늘의 율동 따라 하기">💃 춤추자</button>
             <button class="romi-sound" id="romiSound" type="button" aria-pressed="true"
                     aria-label="로미 소리 켜기·끄기" title="로미 소리">🔊</button>
@@ -1774,9 +1783,11 @@
     var seen = praiseSeen();
     /* 이 기기 첫 실행: 지금 있는 칭찬(없으면 빈 목록)만 본 것으로 치고, 그 뒤에 오는 칭찬부터 띄운다 */
     if (!seen){ markPraiseSeen(list.map(function(p){ return p.id; })); return; }
+    renderPraiseBox();
     if (!list.length || praiseShowing || danceRun) return;
+    if (document.hidden) return;              // 화면이 꺼져 있거나 다른 앱을 보는 중이면, 다시 볼 때 띄운다
     if (document.querySelector('.catch-ov, .fm-ov')) return;
-    var cut = Date.now() - 3 * 24 * 3600 * 1000;
+    var cut = Date.now() - 7 * 24 * 3600 * 1000;
     var next = list.filter(function(p){ return p && p.id && !seen[p.id] && (p.at || 0) > cut; })[0];
     if (next) showPraise(next);
   }
@@ -1787,10 +1798,46 @@
     if (isFriendPing(nm)) return (rare ? '🌟 반짝 ' : '💖 ') + nm + (rare ? '이 놀러 왔어요! 🌟' : '이 놀러 왔어요!');
     return rare ? '🌟 반짝 ' + nm + ' 캐치! 🌟' : nm + ' 캐치!';
   }
+  /* 💌 받은 칭찬함: 최근 7일 칭찬을 모아 두고 다시 볼 수 있다 */
+  function recentPraise(){
+    var cut = Date.now() - 7 * 24 * 3600 * 1000;
+    return (state && Array.isArray(state.praise) ? state.praise : []).filter(function(p){ return p && (p.at || 0) > cut; });
+  }
+  function renderPraiseBox(){
+    var btn = $('praiseBox'); if (!btn) return;
+    var list = recentPraise(), seen = praiseSeen() || {};
+    btn.hidden = !list.length;
+    $('praiseCount').textContent = list.length;
+    btn.classList.toggle('new', list.some(function(p){ return !seen[p.id]; }));
+  }
+  function openPraiseBox(){
+    var list = recentPraise().slice().reverse();
+    if (!list.length) return;
+    var old = document.querySelector('.fm-ov'); if (old && old.parentNode) old.parentNode.removeChild(old);
+    var ov = document.createElement('div');
+    ov.className = 'fm-ov';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', '받은 칭찬');
+    ov.innerHTML = '<div class="fm-box">'
+      + '<div class="fm-head"><b>💌 받은 칭찬</b><button type="button" class="fm-x" aria-label="닫기">✕</button></div>'
+      + '<p class="fm-msg">누르면 크게 다시 볼 수 있어요</p>'
+      + '<div class="fm-list">' + list.map(function(p, i){
+          var d = new Date(p.at || 0), when = (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+          return '<button type="button" class="pb-row" data-i="' + i + '"><span class="pb-from">' + esc(whoOf(p.who).label) + ' · ' + when + '</span><span class="pb-msg">' + esc(p.msg) + '</span></button>';
+        }).join('') + '</div><div class="fm-foot"></div></div>';
+    document.body.appendChild(ov);
+    function close(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    ov.querySelector('.fm-x').addEventListener('click', close);
+    ov.addEventListener('click', function(e){
+      if (e.target === ov){ close(); return; }
+      var r = e.target.closest('[data-i]');
+      if (r){ close(); showPraise(list[parseInt(r.getAttribute('data-i'), 10)]); }
+    });
+  }
   function hasBatchim(w){ var c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 > 0; }
   function showPraise(p){
     praiseShowing = true;
     markPraiseSeen([p.id]);
+    renderPraiseBox();
     var from = whoOf(p.who).label;
     var ov = document.createElement('div');
     ov.className = 'praise-ov';
@@ -1798,7 +1845,7 @@
     ov.innerHTML = '<div class="praise-env">💌</div>'
       + '<div class="praise-from">' + esc(from) + (hasBatchim(from) ? '이' : '가') + ' 칭찬 하트를 보냈어요!</div>'
       + '<div class="praise-msg">' + esc(p.msg) + '</div>'
-      + '<div class="praise-tap">화면을 누르면 닫혀요</div>';
+      + '<div class="praise-tap">다 읽었으면 화면을 눌러 주세요 💖</div>';
     document.body.appendChild(ov);
     romiChime(true);
     var H = window.innerHeight || 700, W = window.innerWidth || 400;
@@ -1820,8 +1867,7 @@
       setTimeout(function(){ if (ov.parentNode) ov.parentNode.removeChild(ov); praiseShowing = false; }, 420);
       romiSay('💌 ' + from + '의 칭찬: ' + p.msg, '로미도 정말 기뻐요!', 6000);
     }
-    ov.addEventListener('click', close);
-    setTimeout(close, 9000);
+    ov.addEventListener('click', close);      // 저절로 닫히지 않는다: 아이가 보고 눌러야 닫힘
   }
 
   function addFairies(files){
@@ -3803,6 +3849,8 @@
     });
     onLongPress($('praiseBtn').parentNode, '#praiseBtn', function(){ openPraiseSender(); });
     setInterval(checkPraise, 3000);
+    $('praiseBox').addEventListener('click', openPraiseBox);
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) setTimeout(checkPraise, 600); });
     setTimeout(checkPraise, 1500);
 
     /* 🧚 요정 관리 (부모용): 2초 길게 누르면 요정 목록이 열린다 — 이름 바꾸기, 사진으로 요정 추가 */
