@@ -666,6 +666,21 @@
   .todo-done-banner b{color:#D6336C;font-weight:900}
   .todo-done-banner span{display:block;margin-top:2px;font-size:12.5px;font-weight:700;color:#B5719A}
   .todo-done-banner[hidden]{display:none}
+  /* 💌 칭찬 하트 */
+  .pr-chips{display:flex;flex-wrap:wrap;gap:8px;padding:2px 18px 6px}
+  .pr-chip{border:1.5px solid #F2DFE7;background:#fff;color:#8A3B62;font:inherit;font-size:14px;font-weight:800;padding:9px 12px;border-radius:999px;cursor:pointer}
+  .pr-chip.on{background:#F48FB1;border-color:#F48FB1;color:#fff}
+  .pr-label{margin:8px 18px 4px;font-size:12px;font-weight:800;color:#B5719A}
+  .pr-text{margin:4px 18px 0;width:calc(100% - 36px);box-sizing:border-box;font:inherit;font-size:16px;padding:11px 12px;border-radius:12px;border:1.5px solid #F2DFE7}
+  .praise-ov{position:fixed;inset:0;z-index:9996;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;
+    background:radial-gradient(circle at 50% 42%,#FFF6FA 0%,#FFD0E4 55%,#F3B6D4 100%);overflow:hidden;cursor:pointer;animation:ovIn .35s ease both}
+  .praise-ov.out{animation:ovOut .4s ease forwards}
+  .praise-env{font-size:clamp(70px,20vmin,130px);line-height:1;animation:envPop .9s cubic-bezier(.34,1.56,.64,1) both, cardFloat 2.4s ease-in-out .9s infinite}
+  @keyframes envPop{0%{transform:scale(0) rotate(-25deg)}60%{transform:scale(1.25) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+  .praise-from{font-size:clamp(18px,4.4vmin,26px);font-weight:900;color:#A23B72;animation:titleIn .5s ease .3s both}
+  .praise-msg{max-width:640px;font-size:clamp(28px,7vmin,48px);font-weight:900;color:#D6336C;line-height:1.25;word-break:keep-all;
+    text-shadow:0 2px 0 #fff,0 0 18px #fff;animation:titleIn .6s cubic-bezier(.34,1.56,.64,1) .55s both}
+  .praise-tap{font-size:13px;color:#A0617F;opacity:.8;animation:titleIn .4s ease 1.4s both}
   .fm-ov{position:fixed;inset:0;z-index:9995;background:rgba(60,40,55,.42);display:flex;align-items:center;justify-content:center;padding:16px}
   .fm-box{background:#FFFDF9;border-radius:22px;width:min(460px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;
     box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden}
@@ -678,6 +693,10 @@
   .fm-row input{flex:1 1 auto;min-width:0;font:inherit;font-size:16px;font-weight:700;padding:10px 12px;border-radius:12px;border:1.5px solid #F2DFE7;background:#fff;color:#3E3530}
   .fm-tag{flex:0 0 auto;font-size:11px;font-weight:800;color:#B6A9A1;padding:3px 8px;border-radius:999px;background:#F2ECE8}
   .fm-tag.new{color:#D2669A;background:#FFE3EE}
+  .fm-hide{flex:0 0 auto;border:none;font:inherit;font-size:12px;font-weight:800;color:#C2255C;background:#FFE3EE;padding:8px 10px;border-radius:10px;cursor:pointer;white-space:nowrap}
+  .fm-row.off img{filter:grayscale(1);opacity:.45}
+  .fm-row.off input{color:#B6A9A1;text-decoration:line-through}
+  .fm-row.off .fm-hide{color:#2F7D4F;background:#E3F6EA}
   .fm-foot{display:flex;gap:8px;padding:12px 14px 16px}
   .fm-foot .btn{flex:1 1 auto}
   .fm-foot .fm-add{background:#F3EBFF;color:#7A4DB8}
@@ -1008,9 +1027,9 @@
     <section class="card span12 star-card" id="starCard">
       <div class="card-head">
         <div class="ico heart-ico"><img data-asset="fairy-heartbox.png" alt="" width="31" height="31" aria-hidden="true"></div>
-        <h2 class="card-title">✨ 하트요정 도감</h2>
+        <h2 class="card-title">✨ 티니핑 도감</h2>
         <span class="streak" id="streak" hidden title="오늘 할 일을 모두 끝낸 날이 이어진 횟수"><span class="fire">🔥</span><span id="streakNum">0</span>일 연속</span>
-        <span class="card-sub" id="starHead">모은 요정 0 / 7마리</span>
+        <span class="card-sub" id="starHead">모은 티니핑 0 / 7마리</span>
       </div>
       <div class="star-body">
         <div class="star-left">
@@ -1040,12 +1059,13 @@
           </div>
           <div class="dex" id="stars"></div>
           <div class="star-side">
-            <p class="star-hint" id="starHint" role="status" aria-live="polite">오늘 할 일을 모두 체크하면 하트요정이 한 마리 찾아와 도감에 쏙 들어와요 ✨</p>
+            <p class="star-hint" id="starHint" role="status" aria-live="polite">오늘 할 일을 모두 체크하면 티니핑이 한 마리 찾아와 도감에 쏙 들어와요 ✨</p>
             <div class="star-meta">
               <span class="count">목표 <select class="goal" id="goal" aria-label="목표 요정 수"></select></span>
-              <button class="mini" id="starReset" type="button" title="오늘 할 일 체크만 초기화합니다. 모은 요정은 그대로 남아요.">오늘 할 일 리셋</button>
+              <button class="mini" id="starReset" type="button" title="오늘 할 일 체크만 초기화합니다. 모은 티니핑은 그대로 남아요.">오늘 할 일 리셋</button>
               <button class="mini hold-btn" id="dexClear" type="button" title="보상을 준 뒤 길게 눌러 도감을 비웁니다.">🎁 도감 비우기</button>
-              <button class="mini hold-btn" id="fairyAdd" type="button" title="부모용: 2초 길게 눌러 요정 이름을 바꾸거나 새 요정을 추가합니다.">🧚 요정 관리</button>
+              <button class="mini hold-btn" id="praiseBtn" type="button" title="부모용: 2초 길게 눌러 아이에게 칭찬 하트를 보냅니다.">💌 칭찬 보내기</button>
+              <button class="mini hold-btn" id="fairyAdd" type="button" title="부모용: 2초 길게 눌러 티니핑 이름을 바꾸거나 새 티니핑을 추가합니다.">🧚 티니핑 관리</button>
               <input type="file" id="fairyFile" accept="image/*" multiple hidden>
             </div>
             <div class="reward-row">
@@ -1488,6 +1508,8 @@
      카드 색은 기본 4가지 색을 차례로 나눠 쓰고, 순서는 번호대로라 도감에 저장된 번호가 바뀌지 않는다. */
   var BASE_FAIRIES = FAIRIES.length;
   var CUSTOM_FAIRY_RE = /^fairy-c(\d{1,2})\.jpg$/;
+  /* 뺀 티니핑: 그림은 보관함에 남겨 두고(도감에 이미 모은 칸이 깨지지 않게) 할 일 카드에만 안 나온다 */
+  function hiddenFairies(){ return (state && state.hiddenFairies && typeof state.hiddenFairies === 'object') ? state.hiddenFairies : {}; }
   function customFairyFiles(){
     return Object.keys(ASSETS).filter(function(n){ return CUSTOM_FAIRY_RE.test(n); })
       .sort(function(a, b){ return parseInt(a.match(CUSTOM_FAIRY_RE)[1], 10) - parseInt(b.match(CUSTOM_FAIRY_RE)[1], 10); });
@@ -1504,7 +1526,7 @@
     customFairyFiles().forEach(function(file){
       var n = parseInt(file.match(CUSTOM_FAIRY_RE)[1], 10), base = FAIRIES[(n - 1) % BASE_FAIRIES];
       for (var b = 0; b < BASE_FAIRIES; b++) if (FAIRIES[b].key === keys[file]) base = FAIRIES[b];
-      FAIRIES.push({key: base.key, name: names[file] || ('요정 친구 ' + (BASE_FAIRIES + n)), file: file,
+      FAIRIES.push({key: base.key, name: names[file] || ('티니핑 ' + (BASE_FAIRIES + n)), file: file, hidden: !!hiddenFairies()[file],
                     get img(){ return A(this.file); }, ring: base.ring, glow: base.glow});
     });
   }
@@ -1536,15 +1558,16 @@
        · 글자와 어울리는 색의 요정을 먼저
        · 점수가 같으면 날마다 다른 순서로 → 같은 할 일이라도 날마다 요정이 바뀐다 */
     var n = FAIRIES.length, out = [], used = {}, usedCount = 0, prevKey = null, prev2Key = null;
+    var visible = 0; for (var vi = 0; vi < n; vi++) if (!FAIRIES[vi].hidden) visible++;
     var groupOf = function(f){ for (var g = 0; g < BASE_FAIRIES; g++) if (FAIRIES[g].key === f.key) return g; return 0; };
     var day = todayIso();
     function luck(k){ var h = 0, sd = day + '#' + k; for (var j = 0; j < sd.length; j++) h = (h * 31 + sd.charCodeAt(j)) >>> 0; return (h % 1000) / 1000; }
     for (var i = 0; i < items.length; i++){
-      if (usedCount >= n){ used = {}; usedCount = 0; }
+      if (usedCount >= visible){ used = {}; usedCount = 0; }
       var sc = fairyScores(items[i] && items[i].text);
       var best = 0, bestScore = -Infinity;
       for (var k = 0; k < n; k++){
-        if (used[k]) continue;
+        if (used[k] || FAIRIES[k].hidden) continue;
         var f = FAIRIES[k], v = sc[groupOf(f)] * 10 + luck(k);
         if (f.key === prevKey) v -= 100;          // 앞 카드와 같은 색은 마지막 수단
         if (f.key === prev2Key) v -= 3;
@@ -1591,7 +1614,7 @@
     }
     $('stars').innerHTML = html;
     renderStreak(false);
-    $('starHead').textContent = '모은 요정 ' + s.count + ' / ' + goal + '마리';
+    $('starHead').textContent = '모은 티니핑 ' + s.count + ' / ' + goal + '마리';
     if (document.activeElement !== $('goal')) $('goal').value = String(goal);
   }
 
@@ -1646,23 +1669,37 @@
     var ov = document.createElement('div');
     ov.className = 'fm-ov';
     ov.setAttribute('role', 'dialog');
-    ov.setAttribute('aria-label', '요정 관리');
+    ov.setAttribute('aria-label', '티니핑 관리');
     var rows = FAIRIES.map(function(f, i){
-      return '<label class="fm-row"><img src="' + f.img + '" alt=""><input type="text" maxlength="12" data-file="' + esc(f.file) + '" value="' + esc(f.name) + '">'
-        + (i < BASE_FAIRIES ? '<span class="fm-tag">기본</span>' : '<span class="fm-tag new">추가</span>') + '</label>';
+      return '<label class="fm-row' + (f.hidden ? ' off' : '') + '"><img src="' + f.img + '" alt=""><input type="text" maxlength="12" data-file="' + esc(f.file) + '" value="' + esc(f.name) + '">'
+        + (i < BASE_FAIRIES ? '<span class="fm-tag">기본</span>'
+           : '<button type="button" class="fm-hide" data-hide="' + esc(f.file) + '">' + (f.hidden ? '↩︎ 다시 넣기' : '🗑 빼기') + '</button>')
+        + '</label>';
     }).join('');
     ov.innerHTML = '<div class="fm-box">'
-      + '<div class="fm-head"><b>🧚 요정 관리</b><button type="button" class="fm-x" aria-label="닫기">✕</button></div>'
+      + '<div class="fm-head"><b>🧚 티니핑 관리</b><button type="button" class="fm-x" aria-label="닫기">✕</button></div>'
       + (msg ? '<p class="fm-msg">' + esc(msg) + '</p>' : '<p class="fm-msg">사진을 보고 이름을 고친 뒤 저장을 눌러 주세요</p>')
       + '<div class="fm-list">' + rows + '</div>'
-      + '<div class="fm-foot"><button type="button" class="btn fm-add">📷 사진으로 요정 추가</button><button type="button" class="btn fm-save">저장</button></div>'
+      + '<div class="fm-foot"><button type="button" class="btn fm-add">📷 사진으로 티니핑 추가</button><button type="button" class="btn fm-save">저장</button></div>'
       + '</div>';
     document.body.appendChild(ov);
     function close(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }
     ov.querySelector('.fm-x').addEventListener('click', close);
     ov.addEventListener('click', function(e){ if (e.target === ov) close(); });
+    ov.querySelector('.fm-list').addEventListener('click', function(e){
+      var hb = e.target.closest('[data-hide]');
+      if (!hb) return;
+      e.preventDefault();
+      var file = hb.getAttribute('data-hide'), hid = hiddenFairies(), f = null;
+      FAIRIES.forEach(function(x){ if (x.file === file) f = x; });
+      if (!hid[file] && !confirm((f ? f.name : '이 티니핑') + '을(를) 할 일 카드에서 뺄까요?\n(도감에 이미 모은 칸은 그대로 남아요. 나중에 다시 넣을 수 있어요)')) return;
+      if (!state.hiddenFairies || typeof state.hiddenFairies !== 'object') state.hiddenFairies = {};
+      if (hid[file]) delete state.hiddenFairies[file]; else state.hiddenFairies[file] = true;
+      save(); rebuildFairies(); renderTodos(); renderStars(-1);
+      openFairyManager(state.hiddenFairies[file] ? '뺐어요. 다시 넣으려면 ↩︎ 다시 넣기를 누르세요' : '다시 넣었어요');
+    });
     ov.querySelector('.fm-add').addEventListener('click', function(){
-      if (!pin){ alert('인터넷에 연결된 상태에서만 요정을 추가할 수 있어요'); return; }
+      if (!pin){ alert('인터넷에 연결된 상태에서만 티니핑을 추가할 수 있어요'); return; }
       $('fairyFile').value = '';
       $('fairyFile').click();
     });
@@ -1675,14 +1712,119 @@
       }
       save(); rebuildFairies(); renderTodos(); renderStars(-1);
       close();
-      starNote('🧚 요정 이름을 저장했어요', true);
+      starNote('🧚 티니핑 이름을 저장했어요', true);
     });
   }
+  /* ---------------- 💌 칭찬 하트 ----------------
+     부모가 폰에서 보내면 state.praise 에 쌓이고, 다른 기기(아이 태블릿)는 처음 보는 칭찬을 크게 띄운다.
+     이 기기에서 본 칭찬은 기기에만 기억한다(praise-seen). 3일 지난 칭찬은 띄우지 않는다. */
+  var PRAISE_SEEN_KEY = 'family-dashboard-praise-seen-v1';
+  var PRAISE_MSGS = ['오늘 정말 잘했어! 💖', '사랑해! 🥰', '할 일 다 해서 최고야! 🌟', '숙제 멋지게 했네! 📚', '양치 완벽해! 🦷', '고마워, 우리 딸! 🤗', '오늘도 씩씩했어! 💪'];
+  function praiseSeen(){
+    try{ var v = JSON.parse(localStorage.getItem(PRAISE_SEEN_KEY) || 'null'); return v && typeof v === 'object' ? v : null; }catch(e){ return null; }
+  }
+  function markPraiseSeen(ids){
+    var seen = praiseSeen() || {};
+    ids.forEach(function(id){ seen[id] = 1; });
+    var keys = Object.keys(seen); if (keys.length > 200) keys.slice(0, keys.length - 200).forEach(function(k){ delete seen[k]; });
+    try{ localStorage.setItem(PRAISE_SEEN_KEY, JSON.stringify(seen)); }catch(e){}
+  }
+  function openPraiseSender(){
+    var old = document.querySelector('.fm-ov'); if (old && old.parentNode) old.parentNode.removeChild(old);
+    var who = 'mom', msg = PRAISE_MSGS[0];
+    var ov = document.createElement('div');
+    ov.className = 'fm-ov';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', '칭찬 하트 보내기');
+    ov.innerHTML = '<div class="fm-box">'
+      + '<div class="fm-head"><b>💌 칭찬 하트 보내기</b><button type="button" class="fm-x" aria-label="닫기">✕</button></div>'
+      + '<p class="fm-msg">보내면 아이 화면에 하트와 함께 크게 나타나요</p>'
+      + '<p class="pr-label">누가 보내요?</p>'
+      + '<div class="pr-chips pr-who">' + ['mom', 'dad', 'family'].map(function(k){ return '<button type="button" class="pr-chip' + (k === who ? ' on' : '') + '" data-who="' + k + '">' + WHO[k].label + '</button>'; }).join('') + '</div>'
+      + '<p class="pr-label">어떤 말을 보낼까요?</p>'
+      + '<div class="pr-chips pr-msg">' + PRAISE_MSGS.map(function(m, i){ return '<button type="button" class="pr-chip' + (i ? '' : ' on') + '" data-msg="' + esc(m) + '">' + esc(m) + '</button>'; }).join('') + '</div>'
+      + '<input class="pr-text" type="text" maxlength="40" placeholder="직접 쓰기 (쓰면 이 말이 가요)">'
+      + '<div class="fm-foot"><button type="button" class="btn fm-save pr-send">💌 보내기</button></div>'
+      + '</div>';
+    document.body.appendChild(ov);
+    function close(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    ov.querySelector('.fm-x').addEventListener('click', close);
+    ov.addEventListener('click', function(e){
+      if (e.target === ov){ close(); return; }
+      var w = e.target.closest('[data-who]'), m = e.target.closest('[data-msg]');
+      if (w){ who = w.getAttribute('data-who'); ov.querySelectorAll('[data-who]').forEach(function(b){ b.classList.toggle('on', b === w); }); }
+      if (m){ msg = m.getAttribute('data-msg'); ov.querySelectorAll('[data-msg]').forEach(function(b){ b.classList.toggle('on', b === m); }); }
+    });
+    ov.querySelector('.pr-send').addEventListener('click', function(){
+      var own = ov.querySelector('.pr-text').value.trim();
+      var item = {id: uid(), who: who, msg: (own || msg).slice(0, 40), at: Date.now()};
+      if (!Array.isArray(state.praise)) state.praise = [];
+      state.praise.push(item);
+      if (state.praise.length > 30) state.praise = state.praise.slice(-30);
+      markPraiseSeen([item.id]);          // 보낸 폰에서는 다시 띄우지 않는다
+      save();
+      close();
+      toast('💌 칭찬 하트를 보냈어요! 아이 화면에 곧 나타나요');
+    });
+  }
+  var praiseShowing = false;
+  function checkPraise(){
+    if (!state || !Array.isArray(state.praise) || praiseShowing || danceRun) return;
+    if (document.querySelector('.catch-ov, .fm-ov')) return;
+    var seen = praiseSeen();
+    if (!seen){ markPraiseSeen(state.praise.map(function(p){ return p.id; })); return; }   // 이 기기 첫 실행: 옛 칭찬은 건너뛴다
+    var cut = Date.now() - 3 * 24 * 3600 * 1000;
+    var next = state.praise.filter(function(p){ return p && p.id && !seen[p.id] && (p.at || 0) > cut; })[0];
+    if (next) showPraise(next);
+  }
+  /* 🎉 캐치 문구: 잡힌 티니핑 이름으로. 하츄핑은 잡는 게 아니라 친구라서 '놀러 왔어요' */
+  function isFriendPing(name){ return /하츄핑/.test(String(name || '')); }
+  function catchTitle(f, rare){
+    var nm = f.name;
+    if (isFriendPing(nm)) return (rare ? '🌟 반짝 ' : '💖 ') + nm + (rare ? '이 놀러 왔어요! 🌟' : '이 놀러 왔어요!');
+    return rare ? '🌟 반짝 ' + nm + ' 캐치! 🌟' : nm + ' 캐치!';
+  }
+  function hasBatchim(w){ var c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 > 0; }
+  function showPraise(p){
+    praiseShowing = true;
+    markPraiseSeen([p.id]);
+    var from = whoOf(p.who).label;
+    var ov = document.createElement('div');
+    ov.className = 'praise-ov';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', from + '의 칭찬: ' + p.msg);
+    ov.innerHTML = '<div class="praise-env">💌</div>'
+      + '<div class="praise-from">' + esc(from) + (hasBatchim(from) ? '이' : '가') + ' 칭찬 하트를 보냈어요!</div>'
+      + '<div class="praise-msg">' + esc(p.msg) + '</div>'
+      + '<div class="praise-tap">화면을 누르면 닫혀요</div>';
+    document.body.appendChild(ov);
+    romiChime(true);
+    var H = window.innerHeight || 700, W = window.innerWidth || 400;
+    for (var i = 0; i < 46; i++){
+      var c = document.createElement('span');
+      c.className = 'confetti';
+      c.textContent = ['💖', '💗', '💕', '💞', '✨', '💌'][i % 6];
+      c.style.left = (Math.random() * W).toFixed(0) + 'px';
+      c.style.fontSize = (18 + Math.random() * 18).toFixed(0) + 'px';
+      ov.appendChild(c);
+      try{ c.animate([{transform:'translate(0,0) rotate(0)'},{transform:'translate(' + ((Math.random() - .5) * 120).toFixed(0) + 'px,' + (H + 80) + 'px) rotate(' + ((Math.random() - .5) * 540).toFixed(0) + 'deg)'}],
+        {duration: 2200 + Math.random() * 1600, delay: Math.random() * 1200, easing:'cubic-bezier(.3,.1,.6,1)', fill:'both'}); }catch(e){}
+    }
+    setTimeout(function(){ var env = ov.querySelector('.praise-env'); if (env) sparkBurst(env, 18, 2.4); }, 700);
+    var closed = false;
+    function close(){
+      if (closed) return; closed = true;
+      ov.classList.add('out');
+      setTimeout(function(){ if (ov.parentNode) ov.parentNode.removeChild(ov); praiseShowing = false; }, 420);
+      romiSay('💌 ' + from + '의 칭찬: ' + p.msg, '로미도 정말 기뻐요!', 6000);
+    }
+    ov.addEventListener('click', close);
+    setTimeout(close, 9000);
+  }
+
   function addFairies(files){
     var used = customFairyFiles().map(function(n){ return parseInt(n.match(CUSTOM_FAIRY_RE)[1], 10); });
     var next = 1, added = 0, failed = 0;
     function freeNo(){ while (used.indexOf(next) >= 0) next++; used.push(next); return next; }
-    starNote('🧚 요정 그림을 올리는 중이에요…', false);
+    starNote('🧚 티니핑 그림을 올리는 중이에요…', false);
     var chain = Promise.resolve();
     files.slice(0, 12).forEach(function(file, i){
       chain = chain.then(function(){
@@ -1700,10 +1842,10 @@
     });
     chain.then(function(){
       storeAssets(); save(); applyAssets();
-      if (added) openFairyManager('새 요정 ' + added + '마리가 들어왔어요! 사진을 보고 이름을 지어 주세요 ✏️');
-      if (added && !failed) starNote('🧚 새 요정 ' + added + '마리가 들어왔어요! 할 일 카드에서 만나요', true);
+      if (added) openFairyManager('새 티니핑 ' + added + '마리가 들어왔어요! 사진을 보고 이름을 지어 주세요 ✏️');
+      if (added && !failed) starNote('🧚 새 티니핑 ' + added + '마리가 들어왔어요! 할 일 카드에서 만나요', true);
       else if (added) starNote('🧚 ' + added + '마리 추가, ' + failed + '장은 못 올렸어요', false);
-      else alert('요정을 올리지 못했어요.\nSupabase에서 supabase-fairies.sql 을 먼저 실행했는지 확인해 주세요.');
+      else alert('티니핑을 올리지 못했어요.\nSupabase에서 supabase-fairies.sql 을 먼저 실행했는지 확인해 주세요.');
     });
   }
 
@@ -1738,12 +1880,12 @@
     var ban = $('todoDoneBanner');
     if (ban){
       ban.hidden = !all;
-      if (all) ban.innerHTML = '🎉 <b>오늘 할 일 모두 완료!</b> 정말 잘했어요 💖 <span>내일 또 새로운 요정을 만나요</span>';
+      if (all) ban.innerHTML = '🎉 <b>오늘 할 일 모두 완료!</b> 정말 잘했어요 💖 <span>내일 또 새로운 티니핑을 만나요</span>';
     }
     romiIdle();
     var hint = $('starHint');
     if (hint && !starNoteTimer){
-      hint.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 요정을 만나요' : STAR_HINT;
+      hint.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 티니핑을 만나요' : STAR_HINT;
       hint.className = 'star-hint' + (all ? ' ok' : '');
     }
     renderRomiEnergy(false);
@@ -1751,7 +1893,7 @@
 
 
   /* ---------------- auto catch (오늘 할 일 모두 완료 시 요정 1마리) ---------------- */
-  var STAR_HINT = '오늘 할 일을 모두 체크하면 하트요정이 한 마리 찾아와 도감에 쏙 들어와요 ✨';
+  var STAR_HINT = '오늘 할 일을 모두 체크하면 티니핑이 한 마리 찾아와 도감에 쏙 들어와요 ✨';
   var starNoteTimer = null;
   function starNote(msg, ok){
     var el = $('starHint');
@@ -1762,7 +1904,7 @@
     starNoteTimer = setTimeout(function(){
       starNoteTimer = null;
       var all = state && state.todos.length && allTodosDone();
-      el.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 요정을 만나요' : STAR_HINT;
+      el.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 티니핑을 만나요' : STAR_HINT;
       el.className = 'star-hint' + (all ? ' ok' : '');
       starNoteTimer = null;
     }, 6000);
@@ -1847,7 +1989,7 @@
         if (lastCardFairy != null) setSlotFairy(idx, lastCardFairy);
         save();
         renderStars(idx);
-        starNote(isRare(idx) ? '🌟 반짝 희귀 티니핑 캐치! 🔥 ' + sn + '일 연속!' : '✨ 티니핑 캐치! 🔥 ' + sn + '일 연속 💖', true);
+        starNote((isRare(idx) ? '' : '✨ ') + catchTitle(slotFairy(idx), isRare(idx)) + ' 🔥 ' + sn + '일 연속' + (isRare(idx) ? '!' : ' 💖'), true);
       } else {
         save();
         renderStars(-1);
@@ -1923,7 +2065,7 @@
     var night = document.body && document.body.classList.contains('night');
     var all = state && Array.isArray(state.todos) && state.todos.length > 0 && state.todos.every(function(t){ return t.done; });
     var said, sub;
-    if (night){ said = all ? '오늘 할 일 다 했어! 잘 자 🌙' : '오늘도 수고했어, 잘 자 🌙'; sub = '내일 또 같이 요정을 모으자 💤'; }
+    if (night){ said = all ? '오늘 할 일 다 했어! 잘 자 🌙' : '오늘도 수고했어, 잘 자 🌙'; sub = '내일 또 같이 티니핑을 모으자 💤'; }
     else if (all){ said = '오늘 할 일 완료! 최고야 🎉'; sub = '이제 마음껏 놀아도 돼요 💖'; }
     else { said = '로미가 기다리고 있어요!'; sub = '할 일을 끝내면 로미에게 날아가요'; }
     if (said === ROMI_SAID && sub === ROMI_SUB) return;
@@ -2172,13 +2314,13 @@
       sparkBurst(wrap, 12, 1.4);
       setTimeout(function(){ wrap.classList.remove('landed'); }, 900);
     }
-    romiSay('💖 로미에게 도착!', '요정을 데리고 왔어요', 2600);
+    romiSay('💖 로미에게 도착!', '티니핑을 데리고 왔어요', 2600);
     romiChime(false);
     if (onLand) setTimeout(onLand, 240);
   }
 
   function romiCelebrate(slotIndex){
-    romiSay('✨ 로미가 요정을 만났어요!', '도감에 한 마리 쏙 들어왔어요', 4400);
+    romiSay('✨ 로미가 티니핑을 만났어요!', '도감에 한 마리 쏙 들어왔어요', 4400);
     sparkBurst($('romiFaceWrap'), 14, 1.5);
     romiChime(true);
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2792,11 +2934,12 @@
     var ov = document.createElement('div');
     ov.className = 'catch-ov' + (rare ? ' rare' : '');
     ov.setAttribute('role', 'dialog');
-    ov.setAttribute('aria-label', '티니핑 캐치! ' + f.name + '이 도감에 들어왔어요');
+    var ga = hasBatchim(f.name) ? '이' : '가';
+    ov.setAttribute('aria-label', catchTitle(f, rare) + ' ' + f.name + ga + ' 도감에 들어왔어요');
     ov.innerHTML = '<div class="catch-rays"></div>'
       + '<div class="catch-card" style="background-image:url(\'' + f.img + '\');--ring:' + f.ring + ';--glow:' + f.glow + '"></div>'
-      + '<div class="catch-title">' + (rare ? '🌟 반짝 희귀 티니핑! 🌟' : '티니핑 캐치!') + '</div>'
-      + '<div class="catch-sub">' + (rare ? '금빛 ' : '') + esc(f.name) + '이 도감에 들어왔어요 💖'
+      + '<div class="catch-title">' + esc(catchTitle(f, rare)) + '</div>'
+      + '<div class="catch-sub">' + (rare ? '금빛 ' : '') + esc(f.name) + ga + ' 도감에 들어왔어요 💖'
       +   (streakInfo().count > 1 ? ' · 🔥 ' + streakInfo().count + '일 연속' : '') + '</div>'
       + '<div class="catch-tap">화면을 누르면 닫혀요</div>';
     document.body.appendChild(ov);
@@ -3509,7 +3652,7 @@
         b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
         sparkBurst(b, 6, 0.9);
       } else {
-        starNote('오늘 할 일을 모두 끝내면 요정이 찾아와요 💖', false);
+        starNote('오늘 할 일을 모두 끝내면 티니핑이 찾아와요 💖', false);
       }
     });
     $('goal').addEventListener('change', function(){
@@ -3527,7 +3670,7 @@
       state.todosDate = todayIso();
       save();
       renderTodos(); renderStars(-1);
-      starNote('오늘 할 일을 다시 체크할 수 있게 초기화했어요. 모은 요정은 그대로예요 ✨', false);
+      starNote('오늘 할 일을 다시 체크할 수 있게 초기화했어요. 모은 티니핑은 그대로예요 ✨', false);
     });
     $('reward').addEventListener('input', function(){ state.stars.reward = this.value; save({debounce:true}); });
 
@@ -3593,12 +3736,12 @@
       var n = state.stars.count;
       if (!n) return;
       var f = slotFairy(n - 1);
-      if (!confirm('마지막으로 들어온 ' + f.name + ' 1마리를 도감에서 뺄까요?\n(잘못 들어온 요정을 정리할 때 쓰세요)')) return;
+      if (!confirm('마지막으로 들어온 ' + f.name + ' 1마리를 도감에서 뺄까요?\n(잘못 들어온 티니핑을 정리할 때 쓰세요)')) return;
       state.stars.count = n - 1;
       setRare(n - 1, false);
       if (Array.isArray(state.stars.slots)) state.stars.slots = state.stars.slots.slice(0, n - 1);
       save(); renderStars(-1);
-      starNote('요정 1마리를 도감에서 뺐어요 (지금 ' + (n - 1) + '마리)', false);
+      starNote('티니핑 1마리를 도감에서 뺐어요 (지금 ' + (n - 1) + '마리)', false);
     });
 
     /* 🔥 연속 일수 고치기 (부모용): 도감 제목줄의 '🔥 N일 연속' 또는 '모은 요정' 글자를 2초 길게 */
@@ -3617,10 +3760,19 @@
     });
 
     /* 🧚 요정 추가 (부모용): 2초 길게 눌러 사진을 고르면 네모로 잘라 보관함에 올린다 */
+    /* 💌 칭찬 보내기 (부모용): 2초 길게 */
+    $('praiseBtn').addEventListener('click', function(){
+      if (Date.now() < holdSuppressUntil) return;
+      starNote('💌 칭찬 보내기는 버튼을 2초 길게 눌러 주세요', false);
+    });
+    onLongPress($('praiseBtn').parentNode, '#praiseBtn', function(){ openPraiseSender(); });
+    setInterval(checkPraise, 3000);
+    setTimeout(checkPraise, 1500);
+
     /* 🧚 요정 관리 (부모용): 2초 길게 누르면 요정 목록이 열린다 — 이름 바꾸기, 사진으로 요정 추가 */
     $('fairyAdd').addEventListener('click', function(){
       if (Date.now() < holdSuppressUntil) return;
-      starNote('🧚 요정 관리는 버튼을 2초 길게 눌러 주세요', false);
+      starNote('🧚 티니핑 관리는 버튼을 2초 길게 눌러 주세요', false);
     });
     onLongPress($('fairyAdd').parentNode, '#fairyAdd', function(){ openFairyManager(); });
     $('fairyFile').addEventListener('change', function(){
@@ -3637,12 +3789,12 @@
     onLongPress($('dexClear').parentNode, '#dexClear', function(){
       var n = state.stars.count;
       if (!n){ starNote('도감이 이미 비어 있어요', false); return; }
-      if (!confirm('모은 요정 ' + n + '마리를 모두 비울까요?\n(보상을 준 뒤 새로 모을 때 쓰세요)')) return;
+      if (!confirm('모은 티니핑 ' + n + '마리를 모두 비울까요?\n(보상을 준 뒤 새로 모을 때 쓰세요)')) return;
       state.stars.count = 0;
       state.stars.rare = [];
       state.stars.slots = [];
       save(); renderStars(-1);
-      starNote('도감을 비웠어요. 다시 요정을 모아 볼까요? ✨', false);
+      starNote('도감을 비웠어요. 다시 티니핑을 모아 볼까요? ✨', false);
     });
 
     /* 할 일 카드는 누르면 완료 (키보드 Enter·Space 도 같게 동작) */
@@ -3726,7 +3878,7 @@
 
     /* reset */
     $('resetBtn').addEventListener('click', function(){
-      if (!confirm('모든 내용을 처음 샘플 상태로 되돌릴까요?\n가족 모두의 일정·메모·요정이 지워집니다.')) return;
+      if (!confirm('모든 내용을 처음 샘플 상태로 되돌릴까요?\n가족 모두의 일정·메모·티니핑이 지워집니다.')) return;
       var chk = prompt('정말 지우려면 가족 비밀번호를 입력해 주세요');
       if (chk === null) return;
       if (!pin || String(chk).replace(/\s+/g, '') !== String(pin)){ alert('비밀번호가 맞지 않아 초기화하지 않았어요'); return; }
