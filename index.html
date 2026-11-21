@@ -2064,7 +2064,7 @@
     for (var i = pool.length - 1; i > 0; i--){ var j = (rnd() * (i + 1)) | 0; var t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
     return {
       name: DANCE_NAMES[(rnd() * DANCE_NAMES.length) | 0],
-      moves: pool.slice(0, 10),
+      moves: pool.slice(0, 12),
       key: [0, 2, 5, -3, 3][(rnd() * 5) | 0]    // 날마다 노래 높이(조)가 바뀐다
     };
   }
@@ -2277,20 +2277,20 @@
 
   var danceRun = null;
   /* 💃 율동 진행표: 동작마다 박자 길이·박자 수·노래 부분이 다르고, 중간에 '얼음 땡'이 한 번 끼어든다
-       1~4번째 동작   보통 빠르기 (앞부분 노래)
-       5번째 동작     🐢 슬로모션
-       6~8번째 동작   조금 빠르게 (후렴)
-       9~10번째 동작  ⚡ 빨리빨리 모드 (후렴, 8박자씩)                                */
+       1~4번째 동작    보통 빠르기 (앞부분 노래, 8박자씩)
+       5번째 동작      🐢 슬로모션
+       6~10번째 동작   조금 빠르게 (후렴, 8박자씩)
+       11~12번째 동작  ⚡ 빨리빨리 모드 (후렴, 8박자씩)   → 한 판 약 1분                                */
   function danceSchedule(d){
     var plan = [];
     d.moves.forEach(function(mv, k){
-      if (k < 4) plan.push({mv: mv, beat: 540, beats: 4, part: 'A', mode: ''});
+      if (k < 4) plan.push({mv: mv, beat: 540, beats: 8, part: 'A', mode: ''});
       else if (k === 4) plan.push({mv: mv, beat: 900, beats: 4, part: 'S', mode: '🐢 슬로모션~ 천천히 천천히'});
-      else if (k < 8) plan.push({mv: mv, beat: 470, beats: 4, part: 'B', mode: ''});
+      else if (k < 10) plan.push({mv: mv, beat: 470, beats: 8, part: 'B', mode: ''});
       else plan.push({mv: mv, beat: 370, beats: 8, part: 'B', mode: '⚡ 빨리빨리 모드!'});
     });
     /* 얼음은 한 판에 한 번만, 언제 올지 모르게: 중간쯤 동작의 아무 박자에서 */
-    var cand = [2, 3, 5, 6, 7].filter(function(i){ return i < plan.length; });
+    var cand = [2, 3, 5, 6, 7, 8].filter(function(i){ return i < plan.length; });
     for (var i = cand.length - 1; i > 0; i--){ var j = (Math.random() * (i + 1)) | 0; var t = cand[i]; cand[i] = cand[j]; cand[j] = t; }
     cand.slice(0, 1).forEach(function(k){
       plan[k].freezeAt = 1 + ((Math.random() * (plan[k].beats - 1)) | 0);     // 몇 번째 박자 뒤에 멈출지
