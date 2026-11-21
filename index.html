@@ -1278,6 +1278,7 @@
       map = (map && typeof map === 'object' && !Array.isArray(map)) ? map : {};
       Object.keys(map).forEach(function(n){ if (ASSET_NAMES.indexOf(n) >= 0 || CUSTOM_FAIRY_RE.test(n)) ASSETS[n] = map[n]; });
       storeAssets(); applyAssets();
+      if (dedupeDex()){ save(); renderStars(-1); }
     }).catch(function(){ applyAssets(); });   // 오프라인이면 이 기기에 받아 둔 그림으로
   }
 
@@ -1926,6 +1927,38 @@
     var k = parseInt(sl[i], 10);
     return FAIRIES[(k >= 0 && k < FAIRIES.length) ? k : i % BASE_FAIRIES];
   }
+  /* 도감에 이미 있는 티니핑은 또 잡지 않는다.
+     마지막으로 끝낸 카드의 티니핑이 아직 없으면 그 친구, 이미 있으면 아직 없는 친구 중에서 (모두 있으면 그대로) */
+  function dexFairyIndex(i){ return FAIRIES.indexOf(slotFairy(i)); }
+  function newCatchFairy(idx, prefer){
+    var have = {};
+    for (var i = 0; i < idx; i++) have[dexFairyIndex(i)] = 1;
+    if (prefer != null && prefer >= 0 && !have[prefer]) return prefer;
+    var free = [];
+    for (var k = 0; k < FAIRIES.length; k++) if (!have[k] && !FAIRIES[k].hidden) free.push(k);
+    if (!free.length) return (prefer != null && prefer >= 0) ? prefer : idx % BASE_FAIRIES;
+    return free[(dayLuck(todayIso() + '#catch' + idx) * free.length) | 0];
+  }
+  /* 이미 겹쳐 들어간 칸은 아직 없는 친구로 바꿔 준다 (그림이 다 받아진 뒤 한 번) */
+  function dedupeDex(){
+    if (!state || !state.stars) return false;
+    var n = parseInt(state.stars.count, 10) || 0, have = {}, changed = false;
+    for (var i = 0; i < n; i++){
+      var k = dexFairyIndex(i);
+      if (have[k]){
+        var free = [];
+        for (var j = 0; j < FAIRIES.length; j++) if (!have[j] && !FAIRIES[j].hidden) free.push(j);
+        if (!free.length) continue;
+        k = free[0];
+        setSlotFairy(i, k);
+        changed = true;
+      } else if (!Array.isArray(state.stars.slots) || state.stars.slots[i] == null){
+        setSlotFairy(i, k);      // 칸 순서로만 정해져 있던 옛 칸도 번호를 적어 둔다
+      }
+      have[k] = 1;
+    }
+    return changed;
+  }
   function setSlotFairy(i, k){
     var sl = Array.isArray(state.stars.slots) ? state.stars.slots.slice() : [];
     while (sl.length < i) sl.push(null);
@@ -1989,7 +2022,7 @@
         state.stars.count += 1;
         state.autoStickerDate = today;
         setRare(idx, (sn % STREAK_SPECIAL === 0) || dayLuck(today) < RARE_CHANCE);
-        if (lastCardFairy != null) setSlotFairy(idx, lastCardFairy);
+        setSlotFairy(idx, newCatchFairy(idx, lastCardFairy));
         save();
         renderStars(idx);
         starNote((isRare(idx) ? '' : '✨ ') + catchTitle(slotFairy(idx), isRare(idx)) + ' 🔥 ' + sn + '일 연속' + (isRare(idx) ? '!' : ' 💖'), true);
