@@ -707,6 +707,33 @@
   .fm-foot{display:flex;gap:8px;padding:12px 14px 16px}
   .fm-foot .btn{flex:1 1 auto}
   .fm-foot .fm-add{background:#F3EBFF;color:#7A4DB8}
+  /* ⚡ 돌발 미션 · 🎟 패스권 */
+  .mission-card{margin:2px 0 10px;padding:12px 14px;border-radius:16px;display:flex;align-items:center;gap:12px;
+    background:linear-gradient(135deg,#FFF6D6,#FFE8F1);border:2px dashed #F5B83D;animation:titleIn .5s cubic-bezier(.34,1.56,.64,1) both}
+  .mission-card[hidden]{display:none}
+  .mission-card .mc-emo{font-size:34px;line-height:1;flex:0 0 auto}
+  .mission-card .mc-body{flex:1 1 auto;min-width:0}
+  .mission-card .mc-tag{display:block;font-size:12px;font-weight:900;color:#C2410C}
+  .mission-card .mc-text{display:block;font-size:16px;font-weight:900;color:#5B2340;word-break:keep-all}
+  .mission-card button{flex:0 0 auto;border:none;font:inherit;font-weight:900;font-size:14px;padding:10px 12px;border-radius:12px;cursor:pointer;white-space:nowrap}
+  .mission-card .mc-do{background:#F5B83D;color:#fff;box-shadow:0 3px 10px rgba(245,184,61,.4)}
+  .mission-card .mc-pass{background:#7A4DB8;color:#fff;box-shadow:0 3px 10px rgba(122,77,184,.35)}
+  .mission-card.done{border-style:solid;border-color:#C9B6F0;background:linear-gradient(135deg,#F3EBFF,#FFF0F6)}
+  .todo-card.pass-pick{outline:3px dashed #7A4DB8;outline-offset:3px;animation:passPulse 1s ease-in-out infinite}
+  @keyframes passPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.015)}}
+  .todo-card.passed .tc-badge{background:#EFE6FF;color:#7A4DB8}
+  .mission-ov{position:fixed;inset:0;z-index:9996;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;
+    background:radial-gradient(circle at 50% 42%,#FFFBEA 0%,#FFE39A 50%,#FFB86B 100%);overflow:hidden;animation:ovIn .3s ease both}
+  .mission-ov.out{animation:ovOut .4s ease forwards}
+  .mission-ov .mo-bolt{font-size:clamp(60px,16vmin,110px);line-height:1;animation:envPop .8s cubic-bezier(.34,1.56,.64,1) both, fastFlash .5s steps(2) 6}
+  .mission-ov .mo-title{font-size:clamp(30px,8vmin,54px);font-weight:900;color:#C2410C;text-shadow:0 2px 0 #fff,0 0 18px #fff;animation:titleIn .5s ease .2s both}
+  .mission-ov .mo-emo{font-size:clamp(46px,12vmin,80px);line-height:1;animation:titleIn .5s ease .45s both}
+  .mission-ov .mo-text{max-width:620px;font-size:clamp(24px,6vmin,40px);font-weight:900;color:#5B2340;word-break:keep-all;animation:titleIn .6s cubic-bezier(.34,1.56,.64,1) .6s both}
+  .mission-ov .mo-sub{font-size:clamp(14px,3.4vmin,18px);font-weight:800;color:#8A4B1F;animation:titleIn .4s ease .9s both}
+  .mission-ov .mo-btns{display:flex;gap:10px;margin-top:6px;animation:titleIn .4s ease 1.1s both}
+  .mission-ov button{border:none;font:inherit;font-weight:900;font-size:17px;padding:13px 18px;border-radius:14px;cursor:pointer}
+  .mission-ov .mo-later{background:rgba(255,255,255,.8);color:#8A4B1F}
+  .mission-ov .mo-done{background:#F03E7E;color:#fff;box-shadow:0 4px 14px rgba(240,62,126,.4)}
   .hold-help{font-size:11px;color:#B6A9A1;margin:6px 2px 0}
   .tc-fairy{
     width:58px;height:58px;border-radius:15px;flex:0 0 auto;
@@ -1086,6 +1113,7 @@
         <div class="star-right">
           <div class="sub-head"><span class="sub-title">오늘 할 일</span><span class="card-sub" id="todoCount"></span></div>
           <div class="todo-done-banner" id="todoDoneBanner" hidden role="status"></div>
+          <div class="mission-card" id="missionCard" hidden role="status"></div>
           <ul class="todo-grid" id="todoList"></ul>
           <form class="add-row tight" id="todoForm" autocomplete="off">
             <input type="text" id="todoInput" placeholder="할 일 추가 (예: 피아노 10분)" maxlength="30" style="flex:1">
@@ -1899,6 +1927,91 @@
     });
   }
 
+  /* ---------------- ⚡ 돌발 미션 ----------------
+     하루 한 번, 오후 3시~저녁 8시 사이 '날짜로 정해진' 시각에 갑자기 나타난다 (가족 기기 모두 같은 시각·같은 미션).
+     해내면 🎟 패스권 1장: 오늘 못 한 할 일 하나를 '패스'로 끝낼 수 있다 (오늘만 쓸 수 있음). */
+  var MISSIONS = [
+    ['💆', '엄마 어깨 10번 주물러 드리기'], ['💆', '아빠 어깨 10번 주물러 드리기'], ['🧸', '장난감 3개 제자리에 두기'],
+    ['💧', '물 한 컵 꿀꺽꿀꺽 마시기'], ['🤗', '가족 한 명 꼭 안아 주기'], ['👟', '현관 신발 가지런히 정리하기'],
+    ['🧦', '벗어 둔 양말 빨래 바구니에 넣기'], ['📚', '책장에서 책 한 권 골라 표지 읽어 주기'], ['🦵', '스쿼트 10번 하기'],
+    ['🙆', '기지개 쭉~ 10초 버티기'], ['🎵', '좋아하는 노래 한 소절 부르기'], ['🌱', '화분에 물 주기 (엄마랑 같이)'],
+    ['🍽', '식탁에 수저 놓기 도와주기'], ['🧺', '빨래 개기 3개 도와주기'], ['💌', '가족에게 "사랑해" 말해 주기'],
+    ['🖍', '오늘 기분을 그림으로 그리기'], ['🐸', '개구리처럼 쪼그려 10초 버티기'], ['😁', '거울 보고 제일 멋진 웃음 짓기'],
+    ['🔤', '영어 단어 3개 말해 보기'], ['🔢', '1부터 30까지 세어 보기'], ['🪥', '칫솔과 컵 제자리에 두기'],
+    ['🛏', '내 베개랑 이불 반듯하게 펴기'], ['🙏', '오늘 고마웠던 일 하나 말하기'], ['🎒', '내일 가방 미리 챙겨 두기'],
+    ['🧃', '다 먹은 컵 싱크대에 갖다 두기'], ['🌈', '집에서 무지개 색 물건 3개 찾기'], ['🦩', '한 발로 10초 서 있기'],
+    ['👏', '박수 치면서 내 이름 크게 말하기'], ['🧹', '내 자리 쓰레기 줍기'], ['📸', '가족이랑 웃긴 표정 짓기']
+  ];
+  var MISSION_FROM = 15 * 60, MISSION_TO = 20 * 60;     // 분 단위 (15:00 ~ 20:00)
+  function todaysMission(){
+    var today = todayIso(), r = seededRand('mission' + today);
+    var m = MISSIONS[(r() * MISSIONS.length) | 0];
+    var min = MISSION_FROM + ((r() * (MISSION_TO - MISSION_FROM)) | 0);
+    return {date: today, emo: m[0], text: m[1], at: min};
+  }
+  function missionState(){ var m = state && state.mission; return (m && m.date === todayIso()) ? m : null; }
+  function missionArrived(){
+    var d = new Date(), now = d.getHours() * 60 + d.getMinutes();
+    return now >= todaysMission().at;
+  }
+  function passAvailable(){ var p = state && state.pass; return !!(p && p.date === todayIso() && !p.used); }
+  var passMode = false;
+  function setPassMode(on){
+    passMode = !!on;
+    renderTodos();
+    if (on) starNote('🎟 패스할 할 일을 눌러 주세요 (아직 안 한 것만)', false);
+  }
+  function renderMission(){
+    var el = $('missionCard'); if (!el || !state) return;
+    if (!missionArrived()){ el.hidden = true; return; }
+    var m = todaysMission(), ms = missionState(), done = !!(ms && ms.done);
+    el.hidden = false;
+    el.classList.toggle('done', done);
+    var right;
+    if (!done) right = '<button type="button" class="mc-do">다 했어요!</button>';
+    else if (passAvailable()) right = '<button type="button" class="mc-pass">' + (passMode ? '취소' : '🎟 패스권 쓰기') + '</button>';
+    else right = '';
+    var tag = !done ? '⚡ 돌발 미션!' : (passAvailable() ? '🎟 패스권 1장 — 오늘 못 한 할 일 하나를 패스할 수 있어요' : '✅ 돌발 미션 성공! 패스권도 썼어요');
+    el.innerHTML = '<span class="mc-emo">' + m.emo + '</span><span class="mc-body"><span class="mc-tag">' + tag + '</span>'
+      + '<span class="mc-text">' + esc(m.text) + '</span></span>' + right;
+  }
+  function completeMission(){
+    if (!confirm('"' + todaysMission().text + '" 정말 했어요?')) return;
+    state.mission = {date: todayIso(), done: true};
+    state.pass = {date: todayIso(), used: false};
+    save(); renderMission();
+    romiChime(true);
+    sparkBurst($('missionCard'), 18, 2);
+    romiSay('⚡ 돌발 미션 성공!', '🎟 패스권을 받았어요! 못 한 할 일 하나를 패스할 수 있어요', 5000);
+    starNote('🎟 패스권 1장을 받았어요! 오늘 안에 써야 해요', true);
+  }
+  function showMissionPopup(){
+    var m = todaysMission();
+    var ov = document.createElement('div');
+    ov.className = 'mission-ov';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', '돌발 미션: ' + m.text);
+    ov.innerHTML = '<div class="mo-bolt">⚡</div><div class="mo-title">돌발 미션!</div>'
+      + '<div class="mo-emo">' + m.emo + '</div><div class="mo-text">' + esc(m.text) + '</div>'
+      + '<div class="mo-sub">해내면 🎟 패스권! 오늘 못 한 할 일 하나를 패스할 수 있어요</div>'
+      + '<div class="mo-btns"><button type="button" class="mo-later">이따 할게요</button><button type="button" class="mo-done">다 했어요!</button></div>';
+    document.body.appendChild(ov);
+    stingSound('go'); romiChime(true);
+    function close(){ ov.classList.add('out'); setTimeout(function(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }, 420); }
+    ov.querySelector('.mo-later').addEventListener('click', close);
+    ov.querySelector('.mo-done').addEventListener('click', function(){ close(); setTimeout(completeMission, 450); });
+  }
+  var MISSION_SEEN_KEY = 'family-dashboard-mission-popup';
+  function checkMission(){
+    if (!state || !booted) return;
+    renderMission();
+    if (!missionArrived() || (missionState() && missionState().done)) return;
+    if (document.hidden || danceRun || praiseShowing || document.querySelector('.catch-ov, .fm-ov, .mission-ov, .praise-ov')) return;
+    var seen = null; try{ seen = localStorage.getItem(MISSION_SEEN_KEY); }catch(e){}
+    if (seen === todayIso()) return;                      // 이 기기에서 오늘 이미 띄웠으면 카드로만
+    try{ localStorage.setItem(MISSION_SEEN_KEY, todayIso()); }catch(e){}
+    showMissionPopup();
+  }
+
   function renderTodos(){
     var list = $('todoList');
     var items = state.todos;
@@ -1908,7 +2021,7 @@
       var picks = assignFairies(items);
       list.innerHTML = items.map(function(it, i){
         var fi = picks[i], f = FAIRIES[fi];
-        return '<li class="todo-card k-' + f.key + (it.done ? ' done' : '') + '"'
+        return '<li class="todo-card k-' + f.key + (it.done ? ' done' : '') + (it.passed ? ' passed' : '') + (passMode && !it.done ? ' pass-pick' : '') + '"'
             + ' data-toggle="' + esc(it.id) + '" data-kind="todo" data-todo-id="' + esc(it.id) + '"'
             + ' data-fairy="' + fi + '" role="button" tabindex="0" aria-pressed="' + (it.done ? 'true' : 'false') + '"'
             + ' aria-label="' + esc(it.text) + (it.done ? ' — 완료, 다시 누르면 취소' : ' — 하면 눌러서 완료') + '">'
@@ -1916,7 +2029,7 @@
           + '<span class="tc-main">'
           +   '<span class="tc-text">' + esc(it.text) + '</span>'
           +   '<span class="tc-badge" aria-hidden="true">'
-          +     (it.done ? '완료! 💖' : '다 하면 눌러줘!')
+          +     (it.done ? (it.passed ? '🎟 패스!' : '완료! 💖') : (passMode ? '🎟 여기 패스!' : '다 하면 눌러줘!'))
           +   '</span>'
           + '</span>'
           + '</li>';
@@ -1933,6 +2046,7 @@
       if (all) ban.innerHTML = '🎉 <b>오늘 할 일 모두 완료!</b> 정말 잘했어요 💖 <span>내일 또 새로운 티니핑을 만나요</span>';
     }
     romiIdle();
+    renderMission();
     var hint = $('starHint');
     if (hint && !starNoteTimer){
       hint.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 티니핑을 만나요' : (isSunday() ? STAR_HINT_SUN : STAR_HINT_WEEK);
@@ -2146,7 +2260,7 @@
     }
     if (state.todosDate >= today) return false;   // 오늘(또는 미래)이면 그대로
 
-    state.todos.forEach(function(t){ t.done = false; });
+    state.todos.forEach(function(t){ t.done = false; t.passed = false; });
     state.autoStickerDate = null;                 // 오늘 다시 요정을 잡을 수 있게
     state.todosDate = today;
     if ($('romiSaid')) romiSay('');                // "로미가 기다리고 있어요!"
@@ -3764,7 +3878,7 @@
     });
     $('starReset').addEventListener('click', function(){
       // 새날 시작: 오늘 할 일 체크만 풀고, 모은 별은 그대로 둔다
-      state.todos.forEach(function(t){ t.done = false; });
+      state.todos.forEach(function(t){ t.done = false; t.passed = false; });
       state.autoStickerDate = null;
       state.todosDate = todayIso();
       save();
@@ -3866,6 +3980,13 @@
     });
     onLongPress($('praiseBtn').parentNode, '#praiseBtn', function(){ openPraiseSender(); });
     setInterval(checkPraise, 3000);
+    setInterval(checkMission, 20000);
+    setTimeout(checkMission, 2500);
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) setTimeout(checkMission, 900); });
+    $('missionCard').addEventListener('click', function(e){
+      if (e.target.closest('.mc-do')) completeMission();
+      else if (e.target.closest('.mc-pass')) setPassMode(!passMode);
+    });
     $('praiseBox').addEventListener('click', openPraiseBox);
     document.addEventListener('visibilitychange', function(){ if (!document.hidden) setTimeout(checkPraise, 600); });
     setTimeout(checkPraise, 1500);
@@ -3917,7 +4038,15 @@
         if (k2 !== 'todo') return;
         var id2 = tg.getAttribute('data-toggle');
         var nowDone = false, item = null;
+        var usingPass = passMode;
+        if (usingPass){
+          var target = null; state.todos.forEach(function(x){ if (x.id === id2) target = x; });
+          if (!target || target.done){ starNote('🎟 아직 안 한 할 일을 눌러 주세요', false); return; }
+          setPassMode(false);
+        }
         state.todos.forEach(function(x){ if (x.id === id2){ x.done = !x.done; nowDone = x.done; item = x; } });
+        if (item && usingPass && nowDone){ item.passed = true; state.pass = {date: todayIso(), used: true}; }
+        if (item && !nowDone && item.passed){ item.passed = false; state.pass = {date: todayIso(), used: false}; starNote('🎟 패스권을 돌려받았어요', false); }
         save();
         /* 체크하는 순간의 카드 위치를 먼저 붙잡아 둔다 (곧 다시 그려지므로) */
         var startRect = null, fImg = '';
