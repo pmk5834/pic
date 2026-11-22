@@ -1216,7 +1216,7 @@
         {id:uid(), date:offsetIso(6), title:'가족 영화의 밤 🎬', who:'family'},
         {id:uid(), date:offsetIso(9), title:'독서록 제출', who:'kid'}
       ],
-      stars: {count:0, goal:7, reward:'원하는 책 한 권 사주기 📚'},
+      stars: {count:0, goal:6, reward:'원하는 책 한 권 사주기 📚'},
       autoStickerDate: null,
       todosDate: todayIso(),
       todos: [
@@ -1935,7 +1935,7 @@
     romiIdle();
     var hint = $('starHint');
     if (hint && !starNoteTimer){
-      hint.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 티니핑을 만나요' : STAR_HINT;
+      hint.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 티니핑을 만나요' : (isSunday() ? STAR_HINT_SUN : STAR_HINT_WEEK);
       hint.className = 'star-hint' + (all ? ' ok' : '');
     }
     renderRomiEnergy(false);
@@ -1943,7 +1943,9 @@
 
 
   /* ---------------- auto catch (오늘 할 일 모두 완료 시 요정 1마리) ---------------- */
-  var STAR_HINT = '오늘 할 일을 모두 체크하면 티니핑이 한 마리 찾아와 도감에 쏙 들어와요 ✨';
+  var STAR_HINT_WEEK = '오늘 할 일을 모두 체크하면 티니핑이 한 마리 찾아와 도감에 쏙 들어와요 ✨ (도전: 월~토)';
+  var STAR_HINT_SUN = '🎁 오늘은 일요일 보너스! 다 하면 반짝 티니핑이 와요 🌟 쉬어도 연속은 그대로예요';
+  var STAR_HINT = STAR_HINT_WEEK;
   var starNoteTimer = null;
   function starNote(msg, ok){
     var el = $('starHint');
@@ -1954,13 +1956,13 @@
     starNoteTimer = setTimeout(function(){
       starNoteTimer = null;
       var all = state && state.todos.length && allTodosDone();
-      el.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 티니핑을 만나요' : STAR_HINT;
+      el.textContent = all ? '오늘 할 일 끝! 🎉 내일 또 티니핑을 만나요' : (isSunday() ? STAR_HINT_SUN : STAR_HINT_WEEK);
       el.className = 'star-hint' + (all ? ' ok' : '');
       starNoteTimer = null;
     }, 6000);
   }
   function starGoal(){
-    return Math.max(5, Math.min(20, parseInt(state.stars.goal, 10) || 7));
+    return Math.max(5, Math.min(20, parseInt(state.stars.goal, 10) || 6));
   }
   function allTodosDone(){
     return state.todos.length > 0 && state.todos.every(function(t){ return t.done; });
@@ -2017,10 +2019,15 @@
     if (on) r.push(i);
     state.stars.rare = r;
   }
+  /* 📅 도전 기간은 월~토, 일요일은 보너스:
+       · 일요일은 쉬어도 연속이 이어진다 (토요일 다음 도전일은 월요일)
+       · 일요일에 다 하면 연속 일수는 그대로, 반짝 희귀 티니핑 확정 */
+  function isSunday(iso){ return parseIso(iso || todayIso()).getDay() === 0; }
   function streakInfo(){
     var st = state.streak && typeof state.streak === 'object' ? state.streak : {};
     var n = parseInt(st.count, 10) || 0, last = String(st.last || '');
-    var alive = (last === todayIso() || last === offsetIso(-1));
+    var y = offsetIso(-1);
+    var alive = (last === todayIso() || last === y || (isSunday(y) && last === offsetIso(-2)));
     return {count: alive ? n : 0, last: last};
   }
   function renderStreak(bump){
@@ -2036,17 +2043,17 @@
   function streakUp(){
     var today = todayIso();
     var st = state.streak && typeof state.streak === 'object' ? state.streak : {};
-    if (st.last === today) return parseInt(st.count, 10) || 1;
-    var cur = streakInfo().count;
-    state.streak = {count: cur + 1, last: today, prevCount: parseInt(st.count, 10) || 0, prevLast: st.last || null};
-    return cur + 1;
+    if (st.last === today) return parseInt(st.count, 10) || 0;
+    var cur = streakInfo().count, add = isSunday(today) ? 0 : 1;   // 일요일은 보너스: 연속 일수는 그대로
+    state.streak = {count: cur + add, last: today, prevCount: parseInt(st.count, 10) || 0, prevLast: st.last || null};
+    return cur + add;
   }
   function streakDown(){
     var st = state.streak;
     if (!st || st.last !== todayIso()) return;
     state.streak = {count: st.prevCount || 0, last: st.prevLast || null};
   }
-  var STREAK_SPECIAL = 7;   // 7일마다 희귀 요정 확정
+  var STREAK_SPECIAL = 6;   // 월~토 6일 연속마다 희귀 티니핑 확정 (일요일은 따로 보너스로 확정)
   var RARE_CHANCE = 0.12;   // 평소에는 열 번에 한 번쯤
   /* 그날의 운은 날짜로 정해진다: 체크를 풀었다 다시 해도 희귀 여부가 바뀌지 않게 */
   function dayLuck(iso){
@@ -2067,11 +2074,11 @@
         var idx = state.stars.count;
         state.stars.count += 1;
         state.autoStickerDate = today;
-        setRare(idx, (sn % STREAK_SPECIAL === 0) || dayLuck(today) < RARE_CHANCE);
+        setRare(idx, isSunday(today) || (sn > 0 && sn % STREAK_SPECIAL === 0) || dayLuck(today) < RARE_CHANCE);
         setSlotFairy(idx, newCatchFairy(idx, lastCardFairy));
         save();
         renderStars(idx);
-        starNote((isRare(idx) ? '' : '✨ ') + catchTitle(slotFairy(idx), isRare(idx)) + ' 🔥 ' + sn + '일 연속' + (isRare(idx) ? '!' : ' 💖'), true);
+        starNote((isSunday(today) ? '🎁 일요일 보너스! ' : '') + (isRare(idx) ? '' : '✨ ') + catchTitle(slotFairy(idx), isRare(idx)) + (sn ? ' 🔥 ' + sn + '일 연속' : '') + (isRare(idx) ? '!' : ' 💖'), true);
       } else {
         save();
         renderStars(-1);
@@ -2118,7 +2125,16 @@
     }
     if (changed && saveIfChanged) save({debounce:true});
   }
+  /* 규칙 바꿈(월~토 도전): 도감 목표 7 → 6 (지금 7마리가 다 차 있으면 비울 때 6으로) */
+  function migrateWeekRules(){
+    if (!state || !state.stars || state.weekRules) return false;
+    if ((parseInt(state.stars.goal, 10) || 7) === 7 && (parseInt(state.stars.count, 10) || 0) > 6) return false;
+    if ((parseInt(state.stars.goal, 10) || 7) === 7) state.stars.goal = 6;
+    state.weekRules = 1;
+    return true;
+  }
   function checkDailyTodoReset(saveIfChanged){
+    if (migrateWeekRules() && saveIfChanged) save({debounce:true});
     if (!state) return false;
     prunePastEvents(saveIfChanged);
     var today = todayIso();
@@ -3022,7 +3038,8 @@
       + '<div class="catch-card" style="background-image:url(\'' + f.img + '\');--ring:' + f.ring + ';--glow:' + f.glow + '"></div>'
       + '<div class="catch-title">' + esc(catchTitle(f, rare)) + '</div>'
       + '<div class="catch-sub">' + (rare ? '금빛 ' : '') + esc(f.name) + ga + ' 도감에 들어왔어요 💖'
-      +   (streakInfo().count > 1 ? ' · 🔥 ' + streakInfo().count + '일 연속' : '') + '</div>'
+      +   (streakInfo().count > 1 ? ' · 🔥 ' + streakInfo().count + '일 연속' : '')
+      +   (isSunday() ? '<br>🎁 일요일 보너스 — 반짝 티니핑!' : '') + '</div>'
       + '<div class="catch-tap">화면을 누르면 닫혀요</div>';
     document.body.appendChild(ov);
 
@@ -3877,6 +3894,7 @@
       state.stars.count = 0;
       state.stars.rare = [];
       state.stars.slots = [];
+      migrateWeekRules();
       save(); renderStars(-1);
       starNote('도감을 비웠어요. 다시 티니핑을 모아 볼까요? ✨', false);
     });
