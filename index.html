@@ -734,6 +734,8 @@
   .mission-ov button{border:none;font:inherit;font-weight:900;font-size:17px;padding:13px 18px;border-radius:14px;cursor:pointer}
   .mission-ov .mo-later{background:rgba(255,255,255,.8);color:#8A4B1F}
   .mission-ov .mo-done{background:#F03E7E;color:#fff;box-shadow:0 4px 14px rgba(240,62,126,.4)}
+  .todo-add-lock{display:block;width:100%;margin-top:10px;padding:11px 12px;border-radius:12px;border:1.5px dashed #E8D9D0;background:#FFFCF8;color:#A99A92;font-weight:800}
+  .todo-add-lock[hidden],#todoForm[hidden]{display:none}
   .hold-help{font-size:11px;color:#B6A9A1;margin:6px 2px 0}
   .tc-fairy{
     width:58px;height:58px;border-radius:15px;flex:0 0 auto;
@@ -1115,11 +1117,12 @@
           <div class="todo-done-banner" id="todoDoneBanner" hidden role="status"></div>
           <div class="mission-card" id="missionCard" hidden role="status"></div>
           <ul class="todo-grid" id="todoList"></ul>
-          <form class="add-row tight" id="todoForm" autocomplete="off">
+          <button class="mini hold-btn todo-add-lock" id="todoAddLock" type="button" title="부모용: 2초 길게 눌러 할 일을 추가합니다.">🔒 할 일 추가 (부모용 · 2초 길게)</button>
+          <form class="add-row tight" id="todoForm" autocomplete="off" hidden>
             <input type="text" id="todoInput" placeholder="할 일 추가 (예: 피아노 10분)" maxlength="30" style="flex:1">
             <button class="btn small" type="submit" aria-label="할 일 추가">＋</button>
           </form>
-          <p class="hold-help">할 일 카드를 2초 길게 누르면 고치거나 지울 수 있어요</p>
+          <p class="hold-help">할 일 추가·고치기·지우기는 부모용이에요 — 버튼이나 카드를 2초 길게 눌러 주세요</p>
         </div>
       </div>
     </section>
@@ -3888,13 +3891,32 @@
     $('reward').addEventListener('input', function(){ state.stars.reward = this.value; save({debounce:true}); });
 
     /* todos */
+    /* 🔒 할 일 추가는 부모만: 2초 길게 누르면 1분 동안 입력칸이 열린다 (아이가 마음대로 못 늘리게) */
+    var todoAddTimer = null;
+    function lockTodoAdd(){
+      if (todoAddTimer){ clearTimeout(todoAddTimer); todoAddTimer = null; }
+      $('todoForm').hidden = true; $('todoAddLock').hidden = false; $('todoInput').value = '';
+    }
+    function openTodoAdd(){
+      $('todoAddLock').hidden = true; $('todoForm').hidden = false;
+      $('todoInput').focus();
+      if (todoAddTimer) clearTimeout(todoAddTimer);
+      todoAddTimer = setTimeout(lockTodoAdd, 60000);
+    }
+    $('todoAddLock').addEventListener('click', function(){
+      if (Date.now() < holdSuppressUntil) return;
+      starNote('🔒 할 일 추가는 부모님이 버튼을 2초 길게 눌러야 해요', false);
+    });
+    onLongPress($('todoAddLock').parentNode, '#todoAddLock', openTodoAdd);
     $('todoForm').addEventListener('submit', function(e){
       e.preventDefault();
+      if ($('todoForm').hidden) return;
       var t = $('todoInput').value.trim();
       if (!t) return;
       state.todos.push({id:uid(), text:t, done:false});
-      $('todoInput').value = ''; $('todoInput').focus();
       save(); renderTodos();
+      starNote('➕ "' + t + '" 할 일을 추가했어요', true);
+      lockTodoAdd();
     });
 
     /* 로미 쓰다듬기 · 오늘의 율동 */
