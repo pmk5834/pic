@@ -3979,6 +3979,20 @@
       starNote('티니핑 1마리를 도감에서 뺐어요 (지금 ' + (n - 1) + '마리)', false);
     });
 
+    /* 빈 도감 칸을 2초 길게 누르면 (부모용) 빠진 티니핑 1마리 넣기 — 도감을 비울 때 같이 지워진 날 등 */
+    onLongPress($('stars'), '.dex-slot:not(.on)', function(){
+      var n = state.stars.count;
+      if (n >= starGoal()){ starNote('도감이 이미 가득 찼어요', false); return; }
+      if (!confirm('빠진 티니핑 1마리를 도감에 넣을까요?\n(할 일을 다 했는데 도감에 안 들어간 날을 채울 때 쓰세요)')) return;
+      var rare = confirm('반짝 희귀 티니핑으로 넣을까요?\n(일요일 보너스였다면 확인, 보통 날이면 취소)');
+      var k = newCatchFairy(n, null);
+      state.stars.count = n + 1;
+      setSlotFairy(n, k);
+      setRare(n, rare);
+      save(); renderStars(n);
+      starNote('🧚 ' + FAIRIES[k].name + '을(를) 도감에 넣었어요 (지금 ' + (n + 1) + '마리)', true);
+    });
+
     /* 🔥 연속 일수 고치기 (부모용): 도감 제목줄의 '🔥 N일 연속' 또는 '모은 요정' 글자를 2초 길게 */
     onLongPress($('streak').parentNode, '#streak, #starHead', function(){
       var cur = streakInfo().count;
